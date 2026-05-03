@@ -10,9 +10,26 @@ class RoleFilter implements FilterInterface
 {
     public function before(RequestInterface $request, $arguments = null)
     {
-        $role = session()->get('role');
+        if (!session()->get('isLogin')) {
+            return redirect()->to('/login');
+        }
 
-        if (!$role || !in_array($role, $arguments)) {
+        $role = strtolower(trim(session()->get('role')));
+
+        // mapping role
+        if ($role == 'administrator') {
+            $role = 'admin';
+        }
+
+        $allowed = [];
+
+        if ($arguments) {
+            foreach ($arguments as $arg) {
+                $allowed[] = strtolower(trim($arg));
+            }
+        }
+
+        if (!in_array($role, $allowed)) {
             return redirect()->to('/login');
         }
     }

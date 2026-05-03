@@ -18,40 +18,40 @@ class Auth extends BaseController
     // PROSES LOGIN
     // =========================
     public function loginProcess()
-    {
-        $model = new UserModel();
+{
+    $model = new UserModel();
 
-        $email    = $this->request->getPost('email');
-        $password = $this->request->getPost('password');
+    $email = trim($this->request->getPost('email'));
+    $password = trim($this->request->getPost('password'));
 
-        $user = $model->where('email', $email)->first();
+    $user = $model->where('email', $email)->first();
 
-        // cek user ditemukan & password benar
-        if ($user && password_verify($password, $user['password'])) {
+    if ($user) {
+
+        if (password_verify($password, $user['password'])) {
 
             session()->set([
                 'id'      => $user['id'],
                 'name'    => $user['name'],
                 'email'   => $user['email'],
-                'role'    => $user['role'],
+                'role'    => strtolower(trim($user['role'])),
                 'isLogin' => true
             ]);
 
-            // redirect berdasarkan role
-            if ($user['role'] == 'admin') {
+            if (session()->get('role') == 'admin') {
                 return redirect()->to('/admin');
 
-            } elseif ($user['role'] == 'staff') {
+            } elseif (session()->get('role') == 'staff') {
                 return redirect()->to('/staff');
 
             } else {
-                // CUSTOMER
                 return redirect()->to('/dashboard');
             }
         }
-
-        return redirect()->back()->with('error', 'Email atau password salah');
     }
+
+    return redirect()->back()->with('error', 'Email atau password salah');
+}
 
     // =========================
     // FORM REGISTER
