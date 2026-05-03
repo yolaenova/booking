@@ -7,6 +7,7 @@
 
 <a href="/services/create" class="btn btn-primary mb-3">+ Tambah Layanan</a>
 
+<?php $services = $services ?? []; ?>
 <div class="card">
   <div class="card-body">
 

@@ -1,6 +1,8 @@
 <?= $this->extend('layouts/template') ?>
 <?= $this->section('content') ?>
 
+<?php $service = $service ?? []; ?>
+
 <h3>Booking Layanan</h3>
 
 <div class="card">

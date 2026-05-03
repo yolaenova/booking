@@ -1,6 +1,8 @@
 <?= $this->extend('layouts/template') ?>
 <?= $this->section('content') ?>
 
+<?php $services = $services ?? []; ?>
+
 <h3>Pilih Layanan Makeup</h3>
 
 <div class="row">
