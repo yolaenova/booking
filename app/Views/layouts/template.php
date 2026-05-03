@@ -7,10 +7,10 @@
 
     <title><?= $title ?? 'Dashboard' ?></title>
 
-    <!-- CSS -->
-    <link href="/niceadmin/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/niceadmin/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
-    <link href="/niceadmin/assets/css/style.css" rel="stylesheet">
+<!-- Pastikan menggunakan tanda kurung dan tanda petik yang benar -->
+<link href="<?= base_url('NiceAdmin/assets/vendor/bootstrap/css/bootstrap.min.css') ?>" rel="stylesheet">
+<link href="<?= base_url('NiceAdmin/assets/vendor/bootstrap-icons/bootstrap-icons.css') ?>" rel="stylesheet">
+<link href="<?= base_url('NiceAdmin/assets/css/style.css') ?>" rel="stylesheet">
 
     <!-- DATATABLE -->
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
@@ -106,7 +106,7 @@
                    href="#"
                    data-bs-toggle="dropdown">
 
-                    <img src="/niceadmin/assets/img/profile-img.jpg"
+                    <img src="<?= base_url('NiceAdmin/assets/img/profile-img.jpg') ?>"
                          alt="Profile"
                          class="rounded-circle">
 
@@ -205,15 +205,31 @@
     <?= $this->renderSection('content') ?>
 </main>
 
-<!-- JS -->
-<script src="/niceadmin/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- ======= FOOTER KECIL (Opsional) ======= -->
+<footer id="footer" class="footer">
+    <div class="copyright">
+        &copy; Copyright <strong><span>NiceAdmin</span></strong>. All Rights Reserved
+    </div>
+</footer>
 
-<!-- JQUERY -->
+<a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+<!-- Vendor JS Files -->
+<script src="<?= base_url('NiceAdmin/assets/vendor/apexcharts/apexcharts.min.js') ?>"></script>
+<script src="<?= base_url('NiceAdmin/assets/vendor/bootstrap/js/bootstrap.bundle.min.js') ?>"></script>
+<script src="<?= base_url('NiceAdmin/assets/vendor/chart.js/chart.umd.js') ?>"></script>
+<script src="<?= base_url('NiceAdmin/assets/vendor/echarts/echarts.min.js') ?>"></script>
+<script src="<?= base_url('NiceAdmin/assets/vendor/quill/quill.min.js') ?>"></script>
+<script src="<?= base_url('NiceAdmin/assets/vendor/simple-datatables/simple-datatables.js') ?>"></script>
+<script src="<?= base_url('NiceAdmin/assets/vendor/tinymce/tinymce.min.js') ?>"></script>
+<script src="<?= base_url('NiceAdmin/assets/vendor/php-email-form/validate.js') ?>"></script>
+
+<!-- JQUERY & DATATABLE -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-<!-- DATATABLE -->
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
+<!-- Template Main JS File (INI PALING PENTING) -->
+<script src="<?= base_url('NiceAdmin/assets/js/main.js') ?>"></script>
 </body>
 </html>
