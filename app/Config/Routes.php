@@ -87,3 +87,9 @@ $routes->post('/booking/save', 'Customer::saveBooking', [
 $routes->get('/staff', 'Staff::index', [
     'filter' => ['auth', 'role:staff']
 ]);
+
+//CRUD Layanan (Admin)
+$routes->get('/services', 'Service::index');
+$routes->get('/services/create', 'Service::create');
+$routes->post('/services/save', 'Service::save');
+$routes->get('/services/delete/(:num)', 'Service::delete/$1');

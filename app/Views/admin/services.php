@@ -28,7 +28,8 @@
         <tr>
           <td><?= $i+1 ?></td>
           <td>
-            <img src="/uploads/<?= $s['photo'] ?>" width="80">
+            <!-- Gunakan base_url agar CodeIgniter mencari langsung ke folder public -->
+<img src="<?= base_url('assets/img/services/' . $s['photo']); ?>" width="100" class="img-thumbnail" alt="Foto Layanan">
           </td>
           <td><?= $s['name'] ?></td>
           <td>Rp <?= number_format($s['price']) ?></td>
