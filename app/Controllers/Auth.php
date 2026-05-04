@@ -6,6 +6,13 @@ use App\Models\UserModel;
 
 class Auth extends BaseController
 {
+    protected $userModel;
+
+    public function __construct()
+    {
+        $this->userModel = new UserModel();
+    }
+
     // =========================
     // FORM LOGIN
     // =========================
@@ -18,40 +25,39 @@ class Auth extends BaseController
     // PROSES LOGIN
     // =========================
     public function loginProcess()
-{
-    $model = new UserModel();
+    {
+        $email = trim($this->request->getPost('email'));
+        $password = trim($this->request->getPost('password'));
 
-    $email = trim($this->request->getPost('email'));
-    $password = trim($this->request->getPost('password'));
+        $user = $this->userModel->where('email', $email)->first();
 
-    $user = $model->where('email', $email)->first();
+        if ($user) {
+            if (password_verify($password, $user['password'])) {
+                
+                // Pastikan key 'isLoggedIn' sama dengan yang dicek di RoleFilter
+                session()->set([
+                    'id'          => $user['id'],
+                    'name'        => $user['name'],
+                    'email'       => $user['email'],
+                    'role'        => strtolower(trim($user['role'])),
+                    'isLoggedIn'  => true 
+                ]);
 
-    if ($user) {
-
-        if (password_verify($password, $user['password'])) {
-
-            session()->set([
-                'id'      => $user['id'],
-                'name'    => $user['name'],
-                'email'   => $user['email'],
-                'role'    => strtolower(trim($user['role'])),
-                'isLogin' => true
-            ]);
-
-            if (session()->get('role') == 'admin') {
-                return redirect()->to('/admin');
-
-            } elseif (session()->get('role') == 'staff') {
-                return redirect()->to('/staff');
-
-            } else {
-                return redirect()->to('/dashboard');
+                // Redirect berdasarkan role
+                $role = session()->get('role');
+                if ($role == 'admin' || $role == 'administrator') {
+                    return redirect()->to('/admin');
+                } elseif ($role == 'staff') {
+                    return redirect()->to('/staff');
+                } else {
+                    // Pastikan rute /dashboard mengarah ke Customer::index
+                    return redirect()->to('/dashboard');
+                }
             }
         }
-    }
 
-    return redirect()->back()->with('error', 'Email atau password salah');
-}
+        return redirect()->back()->with('error', 'Email atau password salah');
+    }
 
     // =========================
     // FORM REGISTER
@@ -66,18 +72,16 @@ class Auth extends BaseController
     // =========================
     public function registerProcess()
     {
-        $model = new UserModel();
-
         $email = $this->request->getPost('email');
 
-        // cek email sudah ada
-        $cek = $model->where('email', $email)->first();
+        // Cek apakah email sudah ada
+        $cek = $this->userModel->where('email', $email)->first();
 
         if ($cek) {
             return redirect()->back()->with('error', 'Email sudah terdaftar');
         }
 
-        $model->save([
+        $this->userModel->save([
             'name'     => $this->request->getPost('name'),
             'email'    => $email,
             'phone'    => $this->request->getPost('phone'),
@@ -85,7 +89,7 @@ class Auth extends BaseController
                 $this->request->getPost('password'),
                 PASSWORD_DEFAULT
             ),
-            'role'     => 'customer'
+            'role'     => 'customer' // Otomatis jadi customer saat daftar
         ]);
 
         return redirect()->to('/login')->with('success', 'Register berhasil, silakan login');
