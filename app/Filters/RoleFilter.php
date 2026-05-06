@@ -10,39 +10,48 @@ class RoleFilter implements FilterInterface
 {
     public function before(RequestInterface $request, $arguments = null)
     {
-        // 1. Perbaikan Key Session: Sesuaikan dengan yang ada di Auth Controller
-        // Jika di Auth pakai 'isLoggedIn', maka di sini harus 'isLoggedIn'
+        // 1. Cek login
         if (!session()->get('isLoggedIn')) {
-            return redirect()->to('/login')->with('error', 'Silakan login terlebih dahulu.');
+            return redirect()->to('/login');
         }
 
-        // 2. Ambil role dan bersihkan (lowercase)
+        // 2. Ambil role user
         $role = strtolower(trim(session()->get('role')));
 
-        // 3. Mapping Role (Seringkali di DB tulisannya 'administrator' tapi di route cuma 'admin')
+        // Normalisasi (kalau ada 'administrator')
         if ($role === 'administrator') {
             $role = 'admin';
         }
 
-        // 4. Cek apakah role user ada di dalam daftar yang diizinkan oleh routes
-        if ($arguments) {
-            $allowed = array_map('strtolower', $arguments);
+        // 3. Kalau tidak ada parameter role di route → biarkan lewat
+        if (!$arguments) {
+            return;
+        }
 
-            if (!in_array($role, $allowed)) {
-                // Jika user login tapi rolenya gak cocok, lempar ke dashboard masing-masing
-                if ($role === 'admin') {
-                    return redirect()->to('/admin');
-                } else if ($role === 'customer') {
-                    return redirect()->to('/dashboard');
-                }
-                
-                return redirect()->to('/login')->with('error', 'Anda tidak memiliki akses ke halaman tersebut.');
+        // 4. Ambil role yang diizinkan dari route
+        $allowed = array_map('strtolower', $arguments);
+
+        // 5. Kalau role tidak sesuai → redirect sesuai role
+        if (!in_array($role, $allowed)) {
+
+            // ❗ Hindari infinite redirect
+            $currentPath = $request->getUri()->getPath();
+
+            if ($role === 'admin' && strpos($currentPath, 'admin') === false) {
+                return redirect()->to('/admin');
             }
+
+            if ($role === 'customer' && strpos($currentPath, 'dashboard') === false) {
+                return redirect()->to('/dashboard');
+            }
+
+            // fallback
+            return redirect()->to('/login');
         }
     }
 
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
     {
-        // Biasanya kosong
+        // kosong
     }
 }
