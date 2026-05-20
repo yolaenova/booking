@@ -57,4 +57,7 @@ $routes->get('bookings', 'Customer::bookingHistory');
 // =====================================
 // STAFF (Opsional)
 // =====================================
-// Jika nanti ada role staff, tambahkan di sini
+$routes->group('staff', ['filter' => ['auth', 'role:staff']], function($routes) {
+    $routes->get('/', 'Staff::index');        // akses: /staff
+    $routes->get('dashboard', 'Staff::index'); // akses: /staff/dashboard (opsional)
+});

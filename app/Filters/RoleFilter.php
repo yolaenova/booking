@@ -34,7 +34,7 @@ class RoleFilter implements FilterInterface
         // 5. Kalau role tidak sesuai → redirect sesuai role
         if (!in_array($role, $allowed)) {
 
-            // ❗ Hindari infinite redirect
+            //  Hindari infinite redirect
             $currentPath = $request->getUri()->getPath();
 
             if ($role === 'admin' && strpos($currentPath, 'admin') === false) {
