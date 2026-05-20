@@ -8,24 +8,24 @@ class BookingSeeder extends Seeder
 {
     public function run()
     {
-        // Ambil data pertama dari masing-masing tabel
         $user = $this->db->table('users')->get()->getRow();
         $service = $this->db->table('services')->get()->getRow();
         $schedule = $this->db->table('schedules')->get()->getRow();
 
-        // Insert booking
-        $this->db->table('bookings')->insert([
-            'user_id'          => $user->id,
-            'service_id'       => $service->id,
-            'schedule_id'      => $schedule->id,
-            'booking_date'     => $schedule->date,
-            'booking_time'     => $schedule->start_time,
-            'service_method'   => 'studio',
-            'customer_address' => 'Jl. Mawar No. 10',
-            'total_price'      => $service->price,
-            'booking_status'   => 'pending',
-            'payment_status'   => 'unpaid',
-            'notes'            => 'Booking makeup wedding'
-        ]);
+        if ($user && $service && $schedule) {
+            $data = [
+                'id'               => 1,
+                'user_id'          => $user->id,
+                'service_id'       => $service->id,
+                'schedule_id'      => $schedule->id,
+                // Kolom service_method & customer_address dihapus agar tidak bentrok dengan migration-mu
+                'total_price'      => $service->price,
+                'booking_status'   => 'pending',
+                'payment_status'   => 'unpaid',
+                'notes'            => 'Booking makeup wedding'
+            ];
+
+            $this->db->table('bookings')->insert($data);
+        }
     }
 }

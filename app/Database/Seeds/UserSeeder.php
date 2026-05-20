@@ -8,12 +8,24 @@ class UserSeeder extends Seeder
 {
     public function run()
     {
-        $this->db->table('users')->insert([
-            'name' => 'Administrator',
-            'email' => 'admin@gmail.com',
-            'password' => password_hash('admin123', PASSWORD_DEFAULT),
-            'role' => 'admin',
-            'phone' => '08123456789'
-        ]);
+        $data = [
+            [
+                'name'     => 'Administrator',
+                'email'    => 'admin@gmail.com',
+                'password' => password_hash('admin123', PASSWORD_DEFAULT),
+                'role'     => 'admin',
+                'phone'    => '08123456789'
+            ],
+            [
+                'name'     => 'Staff Booking',
+                'email'    => 'staff@gmail.com',
+                'password' => password_hash('staff123', PASSWORD_DEFAULT),
+                'role'     => 'staff',
+                'phone'    => '08123456788'
+            ],
+        ];
+
+        // Menggunakan insertBatch untuk memasukkan banyak data sekaligus
+        $this->db->table('users')->insertBatch($data);
     }
 }

@@ -8,13 +8,15 @@ class PaymentSeeder extends Seeder
 {
     public function run()
     {
-        $this->db->table('payments')->insert([
+        $data = [
             'booking_id'         => 1,
-            'transaction_id'     => 'TRX001',
-            'payment_type'       => 'bank_transfer',
+            'order_id'           => 'TRX001', // KODE DIUBAH: disamakan dengan migration kamu
             'gross_amount'       => 1500000,
-            'transaction_status' => 'pending',
-            'payment_time'       => date('Y-m-d H:i:s')
-        ]);
+            'payment_type'       => 'bank_transfer',
+            'snap_token'         => 'sample-token-12345', // Ditambahkan karena ada di migration kamu
+            'transaction_status' => 'pending'
+        ];
+
+        $this->db->table('payments')->insert($data);
     }
 }
