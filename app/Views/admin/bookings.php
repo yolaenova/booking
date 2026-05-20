@@ -34,11 +34,11 @@
                         <?php $no = 1; foreach ($bookings as $b) : ?>
                             <tr>
                                 <td><?= $no++; ?></td>
-                                <td><?= $b['customer_name']; ?></td>
-                                <td><?= $b['service_id']; ?></td> <!-- Nanti kita join agar muncul nama layanannya -->
+                                <td><?= $b['customer_name'] ?? 'Customer'; ?></td>
+                                <td><?= $b['service_id'] ?? 'Service'; ?></td> <!-- Nanti kita join agar muncul nama layanannya -->
                                 <td><?= date('d M Y, H:i', strtotime($b['booking_date'])); ?></td>
                                 <td>
-                                    <span class="badge bg-warning"><?= $b['status']; ?></span>
+                                    <span class="badge bg-warning"><?= $b['status'] ?? 'Status'; ?></span>
                                 </td>
                                 <td>
                                     <button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></button>

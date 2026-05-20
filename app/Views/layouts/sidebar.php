@@ -11,14 +11,12 @@
     </li>
 
 <!-- Menu Riwayat Booking -->
+
 <li class="nav-item">
-    <?php 
-        // Menganggap aktif jika URL adalah booking-history ATAU bookings
-        $is_history = (url_is('booking-history') || url_is('bookings')); 
-    ?>
+    <?php $is_history = (url_is('booking-history') || url_is('bookings')); ?>
     <a class="nav-link <?= $is_history ? '' : 'collapsed' ?>" href="<?= base_url('booking-history') ?>">
         <i class="bi bi-calendar-event"></i>
-        <span>Riwayat Booking</span>
+        <span>Booking</span>
     </a>
 </li>
 
