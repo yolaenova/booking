@@ -2,8 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Models\BookingModel; // Import Model agar bisa dipakai
-use App\Models\ServiceModel; // Import ServiceModel jika nanti butuh list layanan
+use App\Models\BookingModel;
 
 class Booking extends BaseController
 {
@@ -11,33 +10,23 @@ class Booking extends BaseController
 
     public function __construct()
     {
-        // Inisialisasi model di constructor
         $this->bookingModel = new BookingModel();
     }
 
     public function index()
     {
+        // Mengambil semua data dari tabel bookings tanpa filter rumit dulu
+        $bookings = $this->bookingModel->findAll(); 
+
+        dd($bookings);
+        
         $data = [
-            'title'    => 'Data Booking',
+            'title'    => 'Riwayat Booking Saya',
             'menu'     => 'booking',
-            // Ambil semua data dari database lewat model
-            'bookings' => $this->bookingModel->findAll() 
+            'bookings' => $bookings 
         ];
 
-        // Pastikan variabel $data dimasukkan ke dalam view
-        return view('admin/bookings', $data);
-    }
-
-    public function create()
-    {
-        // Fungsi untuk menampilkan form tambah data
-        $serviceModel = new ServiceModel();
-        $data = [
-            'title'    => 'Tambah Booking',
-            'menu'     => 'booking',
-            'services' => $serviceModel->findAll() // Untuk dropdown pilihan makeup
-        ];
-
-        return view('admin/booking_create', $data);
+        // Pastikan ini mengarah ke file view yang benar
+        return view('customer/booking_history', $data); 
     }
 }

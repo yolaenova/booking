@@ -1,40 +1,40 @@
 <?= $this->extend('layouts/template') ?>
 <?= $this->section('content') ?>
 
-<?php $services = $services ?? []; ?>
-
-<div class="alert alert-info py-3 mb-4">
-    <h5><strong>Pilihan Layanan Makeup</strong></h5>
-    <p class="mb-0">Silakan pilih layanan yang kamu inginkan, <?= session('name') ?>!</p>
+<div class="pagetitle">
+    <h1>Pilihan Layanan Makeup</h1>
 </div>
 
-<div class="row">
-
-<?php if (empty($services)): ?>
-    <div class="col-12 text-center">
-        <div class="alert alert-warning">
-            Maaf, saat ini belum ada layanan yang tersedia.
-        </div>
+<section class="section">
+    <div class="row">
+        <?php if (!empty($services) && count($services) > 0) : ?>
+            <?php foreach ($services as $s) : ?>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body mt-3">
+                            <h5 class="card-title text-primary p-0 m-0 mb-2"><?= $s['name'] ?></h5>
+                            <p class="card-text text-muted" style="font-size: 14px; min-height: 60px;">
+                                <?= $s['description'] ?>
+                            </p>
+                            <h6 class="font-weight-bold text-success mb-3" style="font-size: 18px;">
+                                Rp <?= number_format($s['price'], 0, ',', '.') ?>
+                            </h6>
+                            
+                            <a href="<?= base_url('booking/' . $s['id']) ?>" class="btn btn-primary w-100">
+                                <i class="bi bi-calendar-check"></i> Pilih Layanan
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php else : ?>
+            <div class="col-12">
+                <div class="alert alert-info text-center" role="alert">
+                    Maaf, saat ini belum ada layanan yang tersedia.
+                </div>
+            </div>
+        <?php endif; ?>
     </div>
-<?php else: ?>
-    <?php foreach($services as $s): ?>
-    <div class="col-md-4">
-      <div class="card mb-3 shadow-sm">
-
-        <img src="<?= base_url('public/assets/img/services/' . $s['photo']) ?>" class="card-img-top" style="height: 200px; object-fit: cover;">
-
-        <div class="card-body">
-          <h5 class="fw-bold"><?= $s['name'] ?></h5>
-          <p class="text-success fw-bold">Rp <?= number_format($s['price'], 0, ',', '.') ?></p>
-
-          <a href="/booking/<?= $s['id'] ?>" class="btn btn-primary w-100">Booking</a>
-        </div>
-
-      </div>
-    </div>
-    <?php endforeach; ?>
-<?php endif; ?>
-
-</div>
+</section>
 
 <?= $this->endSection() ?>

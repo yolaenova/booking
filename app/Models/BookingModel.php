@@ -19,11 +19,11 @@ class BookingModel extends Model
         'total_price',
         'booking_status',
         'payment_status',
-        'booking_date',      // Field baru dari form
-        'booking_time',      // Field baru dari form
-        'service_method',    // Field baru dari form
-        'customer_address',  // Field baru dari form
-        'notes'              // Field baru dari form
+        'booking_date',      
+        'booking_time',      
+        'service_method',    // <--- PASTIKAN TETAP INI YANG ADA DI SINI
+        'customer_address',  
+        'notes'              
     ];
 
     // Aktifkan otomatisasi waktu (created_at & updated_at)
