@@ -5,7 +5,10 @@
   <h1>Layanan Makeup</h1>
 </div>
 
-<a href="/services/create" class="btn btn-primary mb-3">+ Tambah Layanan</a>
+<a href="<?= base_url('admin/services/create'); ?>" 
+   class="btn btn-primary mb-3">
+   + Tambah Layanan
+</a>
 
 <?php $services = $services ?? []; ?>
 <div class="card">
@@ -35,7 +38,10 @@
           <td>Rp <?= number_format($s['price']) ?></td>
           <td><?= $s['duration'] ?> menit</td>
           <td>
-            <a href="/services/delete/<?= $s['id'] ?>" class="btn btn-danger btn-sm">Hapus</a>
+            <a href="<?= base_url('admin/services/delete/' . $s['id']); ?>" 
+   class="btn btn-danger btn-sm">
+   Hapus
+</a>
           </td>
         </tr>
       <?php endforeach; ?>
