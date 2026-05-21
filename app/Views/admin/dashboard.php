@@ -39,6 +39,33 @@
     </div>
 
   </div>
+
+  <div class="card mt-4">
+    <div class="card-body">
+        <h5 class="card-title">Daftar Customer</h5>
+
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nama</th>
+                    <th>Email</th>
+                    <th>No HP</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php $no = 1; foreach ($customers as $c) : ?>
+                    <tr>
+                        <td><?= $no++; ?></td>
+                        <td><?= $c['name']; ?></td>
+                        <td><?= $c['email']; ?></td>
+                        <td><?= $c['phone']; ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
 </section>
 
 <?= $this->endSection() ?>

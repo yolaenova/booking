@@ -19,10 +19,19 @@
 <p>Selamat datang di Booking Makeup Artist</p>
 
 <div class="card shadow mt-4">
-<div class="card-body">
-<h4>Booking Makeup Sekarang</h4>
-<a href="<?= base_url('services-list'); ?>" class="btn btn-success">Lihat Layanan</a>
-</div>
+    <div class="card-body">
+
+        <h4>Booking Makeup Sekarang</h4>
+
+        <a href="<?= base_url('services-list'); ?>" class="btn btn-success">
+            Lihat Layanan
+        </a>
+
+        <a href="<?= base_url('booking-history'); ?>" class="btn btn-primary">
+            Riwayat Booking
+        </a>
+
+    </div>
 </div>
 
 </div>

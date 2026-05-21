@@ -19,7 +19,12 @@ class Admin extends BaseController
         $userModel = new UserModel();
 
         $data['totalBooking'] = $bookingModel->countAll();
-        $data['totalCustomer'] = $userModel->where('role','customer')->countAllResults();
+        
+        $data['customers'] = $userModel
+    ->where('role', 'customer')
+    ->findAll();
+
+$data['totalCustomer'] = count($data['customers']);
 
         $data['bookings'] = $bookingModel
             ->select('bookings.*, users.name, services.name as service_name')
