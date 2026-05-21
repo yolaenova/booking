@@ -16,17 +16,21 @@ class Booking extends BaseController
     }
 
     public function index()
-    {
-        $data = [
-            'title'    => 'Data Booking',
-            'menu'     => 'booking',
-            // Ambil semua data dari database lewat model
-            'bookings' => $this->bookingModel->findAll() 
-        ];
+{
+    $bookings = $this->bookingModel
+        ->select('bookings.*, users.name AS customer_name, services.name AS service_name')
+        ->join('users', 'users.id = bookings.user_id', 'left')
+        ->join('services', 'services.id = bookings.service_id', 'left')
+        ->findAll();
 
-        // Pastikan variabel $data dimasukkan ke dalam view
-        return view('admin/bookings', $data);
-    }
+    $data = [
+        'title'    => 'Data Booking',
+        'menu'     => 'booking',
+        'bookings' => $bookings
+    ];
+
+    return view('admin/bookings', $data);
+}
 
     public function create()
     {
@@ -49,5 +53,25 @@ class Booking extends BaseController
 
     return redirect()->to('/admin/bookings')
                      ->with('success', 'Booking berhasil dihapus');
+}
+
+public function confirm($id)
+{
+    $this->bookingModel->update($id, [
+        'booking_status' => 'process'
+    ]);
+
+    return redirect()->to('/admin/bookings')
+                     ->with('success', 'Booking berhasil dikonfirmasi');
+}
+
+public function cancel($id)
+{
+    $this->bookingModel->update($id, [
+        'booking_status' => 'cancel'
+    ]);
+
+    return redirect()->to('/admin/bookings')
+                     ->with('success', 'Booking berhasil ditolak');
 }
 }

@@ -24,6 +24,8 @@ $routes->group('admin', ['filter' => ['auth', 'role:admin']], function($routes) 
     $routes->get('dashboard', 'Admin::index');
     $routes->get('bookings', 'Booking::index');
     $routes->get('bookings/delete/(:num)', 'Booking::delete/$1');
+    $routes->get('bookings/confirm/(:num)', 'Booking::confirm/$1');
+$routes->get('bookings/cancel/(:num)', 'Booking::cancel/$1');
     
     // CRUD Layanan (Disatukan di sini agar rapi)
     $routes->get('services', 'Service::index');
@@ -46,7 +48,7 @@ $routes->group('', ['filter' => ['auth', 'role:customer']], function($routes) {
     $routes->post('booking/save', 'Customer::saveBooking'); // Proses simpan
     
     // Riwayat
-    $routes->get('booking-history', 'Customer::bookingHistory');
+
     // Tambahkan ini agar alamat /bookings juga mengarah ke riwayat
 $routes->get('bookings', 'Customer::bookingHistory');
 });

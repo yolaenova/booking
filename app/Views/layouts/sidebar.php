@@ -13,8 +13,9 @@
 <!-- Menu Riwayat Booking -->
 
 <li class="nav-item">
-    <?php $is_history = (url_is('booking-history') || url_is('bookings')); ?>
-    <a class="nav-link <?= $is_history ? '' : 'collapsed' ?>" href="<?= base_url('booking-history') ?>">
+<?php $is_history = url_is('booking-history'); ?>
+<a class="nav-link <?= $is_history ? '' : 'collapsed' ?>" 
+   href="<?= base_url('booking-history') ?>">
         <i class="bi bi-calendar-event"></i>
         <span>Booking</span>
     </a>
