@@ -23,6 +23,7 @@ $routes->group('admin', ['filter' => ['auth', 'role:admin']], function($routes) 
     $routes->get('/', 'Admin::index');
     $routes->get('dashboard', 'Admin::index');
     $routes->get('bookings', 'Booking::index');
+    $routes->get('bookings/delete/(:num)', 'Booking::delete/$1');
     
     // CRUD Layanan (Disatukan di sini agar rapi)
     $routes->get('services', 'Service::index');

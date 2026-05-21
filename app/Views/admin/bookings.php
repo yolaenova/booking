@@ -41,8 +41,12 @@
                                     <span class="badge bg-warning"><?= $b['status'] ?? 'Status'; ?></span>
                                 </td>
                                 <td>
-                                    <button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></button>
-                                </td>
+    <a href="<?= base_url('admin/bookings/delete/' . $b['id']); ?>" 
+       class="btn btn-danger btn-sm"
+       onclick="return confirm('Yakin mau hapus booking ini?')">
+        <i class="bi bi-trash"></i>
+    </a>
+</td>
                             </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>

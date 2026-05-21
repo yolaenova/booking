@@ -40,4 +40,14 @@ class Booking extends BaseController
 
         return view('admin/booking_create', $data);
     }
+
+    public function delete($id)
+{
+    $bookingModel = new \App\Models\BookingModel();
+
+    $bookingModel->delete($id);
+
+    return redirect()->to('/admin/bookings')
+                     ->with('success', 'Booking berhasil dihapus');
+}
 }
