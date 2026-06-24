@@ -35,27 +35,24 @@ $routes->get('bookings/cancel/(:num)', 'Booking::cancel/$1');
 });
 
 // =====================================
-// CUSTOMER
+// CUSTOMER ROUTES (Sesuai Layouts/Sidebar Baru)
 // =====================================
 $routes->group('', ['filter' => ['auth', 'role:customer']], function($routes) {
-    // Dashboard
-    $routes->get('customer', 'Customer::index');
-    $routes->get('dashboard', 'Customer::index');
-
-    // Alur Booking
-    $routes->get('services-list', 'Customer::services'); // Menampilkan pilihan
-    $routes->get('booking/(:num)', 'Customer::booking/$1'); // Form input
-    $routes->post('booking/save', 'Customer::saveBooking'); // Proses simpan
     
-    // Riwayat
+    // 1. Dashboard
+    $routes->get('customer', 'Customer::index');
+    $routes->get('dashboard', 'Customer::index'); // Dibuka saat klik menu Dashboard
 
-    // Tambahkan ini agar alamat /bookings juga mengarah ke riwayat
-$routes->get('bookings', 'Customer::bookingHistory');
+    // 2. Alur Layanan & Form Booking
+    $routes->get('services-list', 'Customer::services');    // Dibuka saat klik menu Layanan
+    $routes->get('services', 'Customer::services');         // Antisipasi jika diakses manual
+    $routes->get('booking/(:num)', 'Customer::booking/$1'); // Form input detail booking
+    $routes->post('booking/save', 'Customer::saveBooking'); // Proses simpan data ke database
+    
+    // 3. Riwayat Booking
+    $routes->get('booking-history', 'Customer::bookingHistory'); // Dibuka saat klik menu Booking
+    $routes->get('bookings', 'Customer::bookingHistory');        // Cadangan/pintu darurat
 });
-
-    // Di dalam group customer, tambahkan ini di bawah rute services-list
-    $routes->get('services-list', 'Customer::services'); 
-    $routes->get('services', 'Customer::services'); // Pintu darurat agar tidak 404
 
 // =====================================
 // STAFF (Opsional)

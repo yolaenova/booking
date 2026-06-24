@@ -20,7 +20,11 @@
 <body>
 
 <?= $this->include('components/header') ?>
-<?= $this->include('components/sidebar') ?>
+<?php if (session('role') === 'customer') : ?>
+    <?= $this->include('components/sidebar_customer') ?>
+<?php else : ?>
+    <?= $this->include('components/sidebar') ?>
+<?php endif; ?>
 
 <main id="main" class="main">
     <?= $this->renderSection('content') ?>
