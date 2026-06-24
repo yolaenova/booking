@@ -3,7 +3,8 @@
 namespace App\Controllers;
 
 use App\Models\BookingModel;
-use App\Models\ServiceModel; // Ditambahkan supaya fungsi create() tidak error Class Not Found
+use App\Models\ServiceModel; 
+use App\Models\UserModel;
 
 class Booking extends BaseController
 {
@@ -15,7 +16,7 @@ class Booking extends BaseController
     }
 
     // ==========================================
-    //               FITUR ADMIN
+    //                 FITUR ADMIN
     // ==========================================
 
     // Menampilkan semua data booking di panel Admin
@@ -39,15 +40,40 @@ class Booking extends BaseController
     // Menampilkan form tambah data oleh Admin
     public function create()
     {
-        // Fungsi untuk menampilkan form tambah data
         $serviceModel = new ServiceModel();
+        $userModel = new UserModel();
+
         $data = [
-            'title'    => 'Tambah Booking',
-            'menu'     => 'booking',
-            'services' => $serviceModel->findAll() // Untuk dropdown pilihan makeup
+            'title'     => 'Tambah Booking',
+            'menu'      => 'booking',
+            'services'  => $serviceModel->findAll(),
+            'customers' => $userModel->where('role', 'customer')->findAll() // ➕ Ditambahkan agar dropdown pelanggan terisi data asli
         ];
 
         return view('admin/booking_create', $data);
+    }
+
+    // ➕ FUNGSI BARU: Memproses penyimpanan data form booking manual ke database
+    public function save()
+    {
+        if (!$this->validate([
+            'user_id'      => 'required',
+            'service_id'   => 'required',
+            'booking_date' => 'required',
+            'total_price'  => 'required|numeric',
+        ])) {
+            return redirect()->back()->withInput();
+        }
+
+        $this->bookingModel->save([
+            'user_id'        => $this->request->getPost('user_id'),
+            'service_id'     => $this->request->getPost('service_id'),
+            'booking_date'   => $this->request->getPost('booking_date'),
+            'total_price'    => $this->request->getPost('total_price'),
+            'booking_status' => 'process' // Langsung disetujui karena diinput langsung oleh admin
+        ]);
+
+        return redirect()->to('/admin/bookings')->with('success', 'Booking manual berhasil disimpan!');
     }
 
 
@@ -55,13 +81,9 @@ class Booking extends BaseController
     //             FITUR CUSTOMER (Temanmu)
     // ==========================================
     
-    // Diubah namanya dari index() menjadi history() agar tidak bentrok dengan milik Admin
     public function history()
     {
-        // Mengambil semua data dari tabel bookings tanpa filter rumit dulu
         $bookings = $this->bookingModel->findAll(); 
-
-        // dd($bookings); // Sengaja di-comment dulu agar halaman tidak stuck di fungsi dump ini
         
         $data = [
             'title'    => 'Riwayat Booking Saya',
@@ -69,7 +91,6 @@ class Booking extends BaseController
             'bookings' => $bookings 
         ];
 
-        // Pastikan ini mengarah ke file view yang benar
         return view('customer/booking_history', $data); 
     }
 
@@ -80,8 +101,7 @@ class Booking extends BaseController
 
     public function delete($id)
     {
-        $bookingModel = new \App\Models\BookingModel();
-        $bookingModel->delete($id);
+        $this->bookingModel->delete($id);
 
         return redirect()->to('/admin/bookings')
                          ->with('success', 'Booking berhasil dihapus');
