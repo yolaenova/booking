@@ -52,8 +52,8 @@ class Booking extends BaseController
         return view('admin/booking_create', $data);
     }
 
-    // 🛠️ PERBAIKAN FUNGSI SAVE: Memproses penyimpanan data dengan input nama bebas (customer_name)
-public function save()
+    // 🛠️ PERBAIKAN FUNGSI SAVE: Memproses penyimpanan data dengan input nama bebas (customer_name) & Proteksi cURL
+    public function save()
     {
         if (!$this->validate([
             'customer_name' => 'required',
@@ -64,7 +64,7 @@ public function save()
             return redirect()->back()->withInput();
         }
 
-        // 1. Simpan Data ke Database Utama
+        // 1. Simpan Data ke Database Utama (Ini tetap berjalan mendahului API)
         $this->bookingModel->save([
             'user_id'        => null, 
             'customer_name'  => $this->request->getPost('customer_name'), 
@@ -74,15 +74,15 @@ public function save()
             'booking_status' => 'process' 
         ]);
 
-        // --- ➕ IMPLEMENTASI POIN 5: WEBSERVICE CLIENT (KIRIM WA) ---
-        $client = \Config\Services::curlrequest();
-        
-        // Ganti nomor tujuan dengan nomor simulasi, atau buat dinamis jika ada input nomor HP pelanggan
-        $nomorTujuan = "6289603083502"; // Format harus diawali kode negara (62...) tanpa tanda +
+        // --- ⚙️ IMPLEMENTASI POIN 5: WEBSERVICE CLIENT YANG DI-PROTEKSI TOTAL ---
+        $nomorTujuan = "6289603083502"; 
         $pesanTeks   = "Halo " . $this->request->getPost('customer_name') . ",\n\nBooking MUA Anda untuk tanggal " . $this->request->getPost('booking_date') . " BERHASIL DISIMPAN oleh Admin dan sedang diproses.";
 
         try {
-            // Menembak REST API WAHA (HTTP POST JSON)
+            // 💡 PENTING: Inisialisasi ditaruh di dalam try-catch. 
+            // Jika ekstensi cURL Laragon mati, error langsung ditangkap di sini dan web TIDAK AKAN CRASH ORANYE.
+            $client = \Config\Services::curlrequest();
+            
             $client->request('POST', 'http://localhost:3000/api/sendText', [
                 'headers' => [
                     'Content-Type' => 'application/json',
@@ -92,15 +92,15 @@ public function save()
                     'text'    => $pesanTeks,
                     'session' => 'default'
                 ],
-                'timeout' => 4 // Batasi waktu tunggu agar web tidak lemot jika WAHA mati
+                'timeout' => 4 
             ]);
             
             $waMessage = ' dan Notifikasi WA berhasil dikirim!';
         } catch (\Exception $e) {
-            // Poin 5: Error Handling Context - Menangkap error jika server WAHA mati agar web tidak crash
-            $waMessage = ', namun Notifikasi WA gagal dikirim (Server WAHA offline).';
+            // Poin 5: Menangkap error cURL laptop mati atau server WAHA offline
+            $waMessage = ', namun Notifikasi WA gagal dikirim (Fitur WA offline / cURL lokal belum aktif).';
         }
-        // --- ➕ AKHIR IMPLEMENTASI POIN 5 ---
+        // --- ⚙️ AKHIR IMPLEMENTASI POIN 5 ---
 
         return redirect()->to('/admin/bookings')->with('success', 'Booking manual berhasil disimpan' . $waMessage);
     }

@@ -26,12 +26,6 @@
       </a>
     </li>
 
-    <li class="nav-item">
-      <a class="nav-link <?= url_is('admin/kurs*') ? '' : 'collapsed' ?>" href="<?= base_url('admin/kurs'); ?>">
-        <i class="bi bi-currency-exchange"></i>
-        <span>Kurs Global</span>
-      </a>
-    </li>
 
   </ul>
 </aside>
