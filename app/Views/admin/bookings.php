@@ -11,7 +11,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <h5 class="card-title">Booking List</h5>
                 <!-- Tombol untuk ke halaman input -->
-                <a href="<?= base_url('bookings/create'); ?>" class="btn btn-primary btn-sm">+ Tambah Booking</a>
+                <a href="<?= base_url('admin/bookings/create'); ?>" class="btn btn-primary btn-sm">+ Tambah Booking</a>
             </div>
 
             <table class="table table-hover">

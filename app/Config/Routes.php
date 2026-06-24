@@ -26,12 +26,19 @@ $routes->group('admin', ['filter' => ['auth', 'role:admin']], function($routes) 
     $routes->get('bookings/delete/(:num)', 'Booking::delete/$1');
     $routes->get('bookings/confirm/(:num)', 'Booking::confirm/$1');
 $routes->get('bookings/cancel/(:num)', 'Booking::cancel/$1');
+
+    // TAMBAHKAN DUA BARIS INI (Rute Baru Tambah Booking)
+    $routes->get('bookings/create', 'Booking::create');
+    $routes->post('bookings/save', 'Booking::save');
     
     // CRUD Layanan (Disatukan di sini agar rapi)
     $routes->get('services', 'Service::index');
     $routes->get('services/create', 'Service::create');
     $routes->post('services/save', 'Service::save');
     $routes->get('services/delete/(:num)', 'Service::delete/$1');
+
+    // Komponen 5: Konsumsi API Kurs (Hanya bisa diakses oleh Admin yang login)
+    $routes->get('kurs', 'Admin::kurs');
 });
 
 // =====================================
@@ -61,3 +68,9 @@ $routes->group('staff', ['filter' => ['auth', 'role:staff']], function($routes) 
     $routes->get('/', 'Staff::index');        // akses: /staff
     $routes->get('dashboard', 'Staff::index'); // akses: /staff/dashboard (opsional)
 });
+
+// =====================================
+// EXPOSE API ENDPOINT (KOMPONEN 6)
+// =====================================
+// Ditaruh di luar grup admin agar sistem luar/Postman bisa memanggilnya via token
+$routes->get('api/summary', 'ApiController::getDashboardSummary');
