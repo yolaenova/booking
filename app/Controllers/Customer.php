@@ -3,15 +3,18 @@
 namespace App\Controllers;
 
 use App\Models\ServiceModel;
+use App\Libraries\WhatsappService; // 1. IMPORT LIBRARY WAHA DI SINI
 
 class Customer extends BaseController
 {
     protected $serviceModel;
+    protected $waService; // Variable untuk menampung service WhatsApp
 
     public function __construct()
     {
         // Model ini yang akan membaca data dari tabel layanan Anda
         $this->serviceModel = new ServiceModel();
+        $this->waService = new WhatsappService(); // 2. INISIALISASI WAHA SERVICE
     }
 
     public function index()
@@ -22,16 +25,21 @@ class Customer extends BaseController
         return view('customer/dashboard', $data);
     }
 
-    // 1. TAMPILAN DAFTAR LAYANAN (Dinamis dari Database)
+    // 1. TAMPILAN DAFTAR LAYANAN (Dinamis dari Database + Fitur Cache Nilai Maksimal)
     public function services()
     {
-        // Mengambil semua data layanan yang ada di database secara otomatis
-        $services = $this->serviceModel->findAll();
+        // Mencoba mengambil data dari cache lokal terlebih dahulu selama 5 menit
+        if (! $services = cache('makeup_services_list')) {
+            // Jika cache kosong, ambil dari database
+            $services = $this->serviceModel->findAll();
+            // Simpan hasil database ke dalam cache
+            cache()->save('makeup_services_list', $services, 300);
+        }
 
         $data = [
             'title'    => 'Pilihan Layanan Makeup',
             'menu'     => 'layanancustomer',
-            'services' => $services // Data ini akan otomatis bertambah jika Anda input di DB
+            'services' => $services 
         ];
 
         return view('customer/services_list', $data); 
@@ -56,7 +64,7 @@ class Customer extends BaseController
         return view('customer/booking_form', $data);
     }
 
-    // 3. PROSES SIMPAN BOOKING
+    // 3. PROSES SIMPAN BOOKING + KIRIM WAHA API
     public function saveBooking()
     {
         $bookingModel = new \App\Models\BookingModel();
@@ -64,6 +72,9 @@ class Customer extends BaseController
         $serviceId = $this->request->getPost('service_id');
         $totalPrice = $this->request->getPost('price');
         
+        $bookingDate = $this->request->getPost('booking_date') ? $this->request->getPost('booking_date') : date('Y-m-d');
+        $bookingTime = $this->request->getPost('booking_time') ? $this->request->getPost('booking_time') : '09:00:00';
+
         $bookingMethod = $this->request->getPost('service_method') ?? $this->request->getPost('method') ?? 'studio';
         $userNotes = $this->request->getPost('notes') ? $this->request->getPost('notes') : 'No notes';
 
@@ -74,21 +85,29 @@ class Customer extends BaseController
         $checkService = $db->table('services')->where('id', $serviceId)->get()->getRowArray();
         $finalServiceId = $checkService ? $serviceId : 1;
 
-        $anyUser = $db->table('users')->select('id')->orderBy('id', 'ASC')->get()->getRowArray();
-        $validStaffId = $anyUser ? $anyUser['id'] : 1;
+        // Ambil data user yang sedang login untuk mengambil nomor HP (Gunakan session global aplikasi Anda)
+        $sessionUserId = session()->get('id') ?? session()->get('user_id');
+        $currentUser = $db->table('users')->where('id', $sessionUserId)->get()->getRowArray();
+
+        // Cadangan jika session kosong saat testing
+        if (!$currentUser) {
+            $currentUser = $db->table('users')->select('*')->orderBy('id', 'ASC')->get()->getRowArray();
+        }
+        
+        $validStaffId = $currentUser ? $currentUser['id'] : 1;
 
         $scheduleData = [
             'staff_id'   => $validStaffId, 
-            'date'       => $this->request->getPost('booking_date') ? $this->request->getPost('booking_date') : date('Y-m-d'),
-            'start_time' => $this->request->getPost('booking_time') ? $this->request->getPost('booking_time') : '09:00:00', 
-            'end_time'   => date('H:i:s', strtotime(($this->request->getPost('booking_time') ?? '09:00:00') . ' + 2 hours')), 
+            'date'       => $bookingDate,
+            'start_time' => $bookingTime, 
+            'end_time'   => date('H:i:s', strtotime(($bookingTime) . ' + 2 hours')), 
             'capacity'   => 1
         ];
         $db->table('schedules')->insert($scheduleData);
         $scheduleId = $db->insertID(); 
 
         $dataBooking = [
-            'user_id'        => $anyUser['id'] ?? 1, 
+            'user_id'        => $currentUser['id'] ?? 1, 
             'service_id'     => $finalServiceId, 
             'schedule_id'    => $scheduleId, 
             'notes'          => $finalNotes, 
@@ -98,7 +117,30 @@ class Customer extends BaseController
         ];
 
         if ($bookingModel->insert($dataBooking)) {
-            return redirect()->to('/admin/bookings')->with('success', 'Booking kamu berhasil dikirim!');
+            
+            // =============================================================
+            // PROSES INTEGRASI WEBSERVICE API (KIRIM WHATSAPP VIA WAHA)
+            // =============================================================
+            // Ambil nomor HP dari database user yang melakukan booking
+            $customerPhone = $currentUser['phone'] ?? session()->get('phone') ?? '';
+            $customerName = $currentUser['name'] ?? session()->get('name') ?? 'Pelanggan';
+            $serviceName = $checkService ? $checkService['name'] : 'Layanan Makeup';
+
+            if (!empty($customerPhone)) {
+                $pesanWA = "Halo *{$customerName}*,\n\n"
+                         . "Terima kasih telah melakukan booking di platform kami!\n"
+                         . "Layanan: *" . $serviceName . "*\n"
+                         . "Tanggal: " . date('d M Y', strtotime($bookingDate)) . "\n"
+                         . "Waktu: " . $bookingTime . " WIB\n\n"
+                         . "Pesanan Anda saat ini sedang *Menunggu Konfirmasi* dari Admin. Silakan cek status berkala pada menu Riwayat Booking aplikasi.";
+
+                // Tembak API WAHA
+                $this->waService->sendNotification($customerPhone, $pesanWA);
+            }
+            // =============================================================
+
+            // Diubah ke /booking-history agar customer diarahkan ke halaman riwayatnya sendiri, bukan ke halaman admin
+            return redirect()->to('/booking-history')->with('success', 'Booking kamu berhasil dikirim!');
         } else {
             return redirect()->back()->with('error', 'Gagal menyimpan booking.');
         }
