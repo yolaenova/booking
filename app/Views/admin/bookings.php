@@ -10,7 +10,6 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center">
                 <h5 class="card-title">Booking List</h5>
-                <!-- Tombol untuk ke halaman input -->
                 <a href="<?= base_url('admin/bookings/create'); ?>" class="btn btn-primary btn-sm">+ Tambah Booking</a>
             </div>
 
@@ -34,46 +33,50 @@
                         <?php $no = 1; foreach ($bookings as $b) : ?>
                             <tr>
                                 <td><?= $no++; ?></td>
-                                <td><?= $b['customer_name'] ?? 'Customer'; ?></td>
-                                <td><?= $b['service_name'] ?? '-'; ?></td> <!-- Nanti kita join agar muncul nama layanannya -->
-                                <td><?= date('d M Y, H:i', strtotime($b['booking_date'])); ?></td>
-<td>
-    <?php $status = $b['booking_status'] ?? 'pending'; ?>
+                                <td><?= $b['customer_name'] ?? $b['user_customer_name'] ?? 'Customer'; ?></td>
+                                <td><?= $b['service_name'] ?? '-'; ?></td>
+                                <td><?= date('d M Y', strtotime($b['booking_date'] ?? $b['date'] ?? date('Y-m-d'))); ?></td>
+                                
+                                <td>
+                                    <?php $status = $b['booking_status'] ?? 'pending'; ?>
 
-    <?php if ($status == 'pending') : ?>
-        <span class="badge bg-warning text-dark">Menunggu</span>
-    <?php elseif ($status == 'process') : ?>
-        <span class="badge bg-success">Dikonfirmasi</span>
-    <?php elseif ($status == 'cancel') : ?>
-        <span class="badge bg-danger">Ditolak</span>
-    <?php elseif ($status == 'done') : ?>
-        <span class="badge bg-primary">Selesai</span>
-    <?php else : ?>
-        <span class="badge bg-secondary">Status kosong</span>
-    <?php endif; ?>
-</td>
+                                    <?php if ($status == 'pending') : ?>
+                                        <span class="badge bg-warning text-dark">Menunggu</span>
+                                    <?php elseif ($status == 'confirmed' || $status == 'process') : ?>
+                                        <span class="badge bg-success">Dikonfirmasi</span>
+                                    <?php elseif ($status == 'cancelled' || $status == 'cancel') : ?>
+                                        <span class="badge bg-danger">Ditolak</span>
+                                    <?php elseif ($status == 'done') : ?>
+                                        <span class="badge bg-primary">Selesai</span>
+                                    <?php else : ?>
+                                        <span class="badge bg-secondary">Status kosong</span>
+                                    <?php endif; ?>
+                                </td>
 
-<td>
-    <?php if (($b['booking_status'] ?? 'pending') == 'pending') : ?>
-        <a href="<?= base_url('admin/bookings/confirm/' . $b['id']); ?>" 
-           class="btn btn-success btn-sm"
-           onclick="return confirm('Konfirmasi booking ini?')">
-            <i class="bi bi-check"></i>
-        </a>
+                                <td>
+                                    <?php if (($b['booking_status'] ?? 'pending') == 'pending') : ?>
+                                        <a href="<?= base_url('admin/bookings/confirm/' . $b['id']); ?>" 
+                                           class="btn btn-success btn-sm"
+                                           title="Konfirmasi Booking"
+                                           onclick="return confirm('Konfirmasi booking ini?')">
+                                            <i class="bi bi-check-lg"></i>
+                                        </a>
 
-        <a href="<?= base_url('admin/bookings/cancel/' . $b['id']); ?>" 
-           class="btn btn-warning btn-sm"
-           onclick="return confirm('Tolak booking ini?')">
-            <i class="bi bi-x"></i>
-        </a>
-    <?php endif; ?>
+                                        <a href="<?= base_url('admin/bookings/cancel/' . $b['id']); ?>" 
+                                           class="btn btn-warning btn-sm"
+                                           title="Tolak Booking"
+                                           onclick="return confirm('Tolak booking ini?')">
+                                            <i class="bi bi-x-lg"></i>
+                                        </a>
+                                    <?php endif; ?>
 
-    <a href="<?= base_url('admin/bookings/delete/' . $b['id']); ?>" 
-       class="btn btn-danger btn-sm"
-       onclick="return confirm('Hapus booking ini?')">
-        <i class="bi bi-trash"></i>
-    </a>
-</td>
+                                    <a href="<?= base_url('admin/bookings/delete/' . $b['id']); ?>" 
+                                       class="btn btn-danger btn-sm"
+                                       title="Hapus Data"
+                                       onclick="return confirm('Hapus booking ini?')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>

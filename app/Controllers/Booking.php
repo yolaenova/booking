@@ -5,28 +5,28 @@ namespace App\Controllers;
 use App\Models\BookingModel;
 use App\Models\ServiceModel; 
 use App\Models\UserModel;
+use App\Libraries\WhatsappService; 
 
 class Booking extends BaseController
 {
     protected $bookingModel;
+    protected $waService;
 
     public function __construct()
     {
         $this->bookingModel = new BookingModel();
+        $this->waService = new WhatsappService(); 
     }
-
-    // ==========================================
-    //                 FITUR ADMIN
-    // ==========================================
 
     // Menampilkan semua data booking di panel Admin
     public function index()
     {
-        // Dioptimalkan menggunakan left join agar booking tanpa akun (input manual) tetap muncul nama pelanggannya
         $bookings = $this->bookingModel
-            ->select('bookings.*, users.name AS user_customer_name, services.name AS service_name')
+            ->select('bookings.*, users.name AS user_customer_name, users.phone AS user_customer_phone, services.name AS service_name, schedules.date as booking_date, schedules.start_time as booking_time')
             ->join('users', 'users.id = bookings.user_id', 'left')
             ->join('services', 'services.id = bookings.service_id', 'left')
+            ->join('schedules', 'schedules.id = bookings.schedule_id', 'left')
+            ->orderBy('bookings.id', 'DESC')
             ->findAll();
 
         $data = [
@@ -46,13 +46,13 @@ class Booking extends BaseController
         $data = [
             'title'    => 'Tambah Booking',
             'menu'     => 'booking',
-            'services' => $serviceModel->findAll() // Hanya butuh data layanan karena nama customer sekarang diketik bebas
+            'services' => $serviceModel->findAll()
         ];
 
         return view('admin/booking_create', $data);
     }
 
-    // 🛠️ PERBAIKAN FUNGSI SAVE: Memproses penyimpanan data dengan input nama bebas (customer_name) & Proteksi cURL
+    // Memproses penyimpanan data manual oleh admin
     public function save()
     {
         if (!$this->validate([
@@ -64,95 +64,63 @@ class Booking extends BaseController
             return redirect()->back()->withInput();
         }
 
-        // 1. Simpan Data ke Database Utama (Ini tetap berjalan mendahului API)
         $this->bookingModel->save([
             'user_id'        => null, 
             'customer_name'  => $this->request->getPost('customer_name'), 
             'service_id'     => $this->request->getPost('service_id'),
             'booking_date'   => $this->request->getPost('booking_date'),
             'total_price'    => $this->request->getPost('total_price'),
-            'booking_status' => 'process' 
+            'booking_status' => 'pending' 
         ]);
 
-        // --- ⚙️ IMPLEMENTASI POIN 5: WEBSERVICE CLIENT YANG DI-PROTEKSI TOTAL ---
-        $nomorTujuan = "6289603083502"; 
-        $pesanTeks   = "Halo " . $this->request->getPost('customer_name') . ",\n\nBooking MUA Anda untuk tanggal " . $this->request->getPost('booking_date') . " BERHASIL DISIMPAN oleh Admin dan sedang diproses.";
-
-        try {
-            // 💡 PENTING: Inisialisasi ditaruh di dalam try-catch. 
-            // Jika ekstensi cURL Laragon mati, error langsung ditangkap di sini dan web TIDAK AKAN CRASH ORANYE.
-            $client = \Config\Services::curlrequest();
-            
-            $client->request('POST', 'http://localhost:3000/api/sendText', [
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                ],
-                'json' => [
-                    'chatId'  => $nomorTujuan . '@c.us',
-                    'text'    => $pesanTeks,
-                    'session' => 'default'
-                ],
-                'timeout' => 4 
-            ]);
-            
-            $waMessage = ' dan Notifikasi WA berhasil dikirim!';
-        } catch (\Exception $e) {
-            // Poin 5: Menangkap error cURL laptop mati atau server WAHA offline
-            $waMessage = ', namun Notifikasi WA gagal dikirim (Fitur WA offline / cURL lokal belum aktif).';
-        }
-        // --- ⚙️ AKHIR IMPLEMENTASI POIN 5 ---
-
-        return redirect()->to('/admin/bookings')->with('success', 'Booking manual berhasil disimpan' . $waMessage);
+        return redirect()->to('/admin/bookings')->with('success', 'Booking manual berhasil disimpan.');
     }
 
-
-    // ==========================================
-    //             FITUR CUSTOMER (Temanmu)
-    // ==========================================
-    
-    public function history()
+    // Aksi Konfirmasi Booking Admin + WA Otomatis PetaPod
+    public function confirm($id)
     {
-        $bookings = $this->bookingModel->findAll(); 
-        
-        $data = [
-            'title'    => 'Riwayat Booking Saya',
-            'menu'     => 'booking',
-            'bookings' => $bookings 
-        ];
+        $booking = $this->bookingModel
+            ->select('bookings.*, users.name as user_name, users.phone as user_phone, services.name as service_name, schedules.date as b_date')
+            ->join('users', 'users.id = bookings.user_id', 'left')
+            ->join('services', 'services.id = bookings.service_id', 'left')
+            ->join('schedules', 'schedules.id = bookings.schedule_id', 'left')
+            ->find($id);
 
-        return view('customer/booking_history', $data); 
+        $this->bookingModel->update($id, [
+            'booking_status' => 'confirmed' 
+        ]);
+
+        if ($booking) {
+            $phone = $booking['user_phone'] ?? '';
+            $name = $booking['user_name'] ?? $booking['customer_name'] ?? 'Pelanggan';
+            $service = $booking['service_name'] ?? 'Layanan Makeup';
+            $date = isset($booking['b_date']) ? date('d M Y', strtotime($booking['b_date'])) : date('d M Y');
+
+            if (!empty($phone)) {
+                $pesan = "Halo *{$name}*,\n\n"
+                       . "Kabar baik! Booking Anda untuk layanan *{$service}* pada tanggal *{$date}* telah **DIKONFIRMASI** oleh Admin.\n\n"
+                       . "Silakan datang tepat waktu ya. Terima kasih!";
+                
+                $this->waService->sendNotification($phone, $pesan);
+            }
+        }
+
+        return redirect()->to('/admin/bookings')->with('success', 'Booking berhasil dikonfirmasi dan notifikasi WA terkirim!');
     }
 
+    // Aksi Tolak/Batalkan Booking Admin
+    public function cancel($id)
+    {
+        $this->bookingModel->update($id, [
+            'booking_status' => 'cancelled'
+        ]);
 
-    // ==========================================
-    //           AKSI / PROSES DATA ADMIN
-    // ==========================================
+        return redirect()->to('/admin/bookings')->with('success', 'Booking berhasil ditolak/dibatalkan.');
+    }
 
     public function delete($id)
     {
         $this->bookingModel->delete($id);
-
-        return redirect()->to('/admin/bookings')
-                         ->with('success', 'Booking berhasil dihapus');
-    }
-
-    public function confirm($id)
-    {
-        $this->bookingModel->update($id, [
-            'booking_status' => 'process'
-        ]);
-
-        return redirect()->to('/admin/bookings')
-                         ->with('success', 'Booking berhasil dikonfirmasi');
-    }
-
-    public function cancel($id)
-    {
-        $this->bookingModel->update($id, [
-            'booking_status' => 'cancel'
-        ]);
-
-        return redirect()->to('/admin/bookings')
-                         ->with('success', 'Booking berhasil ditolak');
+        return redirect()->to('/admin/bookings')->with('success', 'Booking berhasil dihapus');
     }
 }
