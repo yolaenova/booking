@@ -37,57 +37,28 @@ $data['totalCustomer'] = count($data['customers']);
         return view('admin/dashboard', $data);
     }
 
+// =================================================================
+    // KOMPONEN 5: DETAIL INTEGRASI WHATSAPP GATEWAY (NAMA FILE BARU)
     // =================================================================
-    // KOMPONEN 5: KONSUMSI WEBSERVICE CLIENT + ERROR HANDLING + CACHE
-    // =================================================================
-    public function kurs()
+    public function whatsapp()
     {
-        // 1. Inisialisasi Service Cache CI4
-        $cache = \Config\Services::cache();
+        $client = \Config\Services::curlrequest();
         
-        // Cek apakah data kurs USD ke IDR sudah tersimpan di memori cache server
-        $dataKurs = $cache->get('kurs_usd_idr');
-
-        // 2. Jika cache kosong, kita ambil data baru
-        if (!$dataKurs) {
-            try {
-                // Menggunakan native PHP stream context sebagai pengganti cURL agar bebas dari error server
-                $opts = [
-                    "http" => [
-                        "method" => "GET",
-                        "header" => "Accept: application/json\r\n",
-                        "timeout" => 5
-                    ]
-                ];
-                $context = stream_context_create($opts);
-
-                // Membaca data API secara aman
-                $response = @file_get_contents('https://open.er-api.com/v6/latest/USD', false, $context);
-
-                if ($response !== false) {
-                    $result = json_decode($response, true);
-                    $dataKurs = $result['rates']['IDR'] ?? null;
-
-                    // Skor 4: Simpan data hasil API ke cache selama 1 jam
-                    if ($dataKurs) {
-                        $cache->save('kurs_usd_idr', $dataKurs, 3600);
-                    }
-                } else {
-                    $dataKurs = null;
-                    session()->setFlashdata('error', 'Gagal memuat data dari server API eksternal.');
-                }
-            } catch (\Exception $e) {
-                // Skor 4: Error Handling ketat agar aplikasi tidak crash/blank
-                $dataKurs = null;
-                log_message('error', 'Gagal memanggil API Kurs via Stream: ' . $e->getMessage());
-                session()->setFlashdata('error', 'Koneksi ke API Kurs terputus. Menampilkan estimasi data lokal.');
-            }
+        try {
+            // Tembak server WAHA untuk mengambil status real-time terbarunya
+            $response = $client->request('GET', 'http://localhost:3000/api/sessions/default', [
+                'timeout' => 3
+            ]);
+            $result = json_decode($response->getBody(), true);
+            $wahaStatus = $result['status'] ?? 'DISCONNECTED';
+        } catch (\Exception $e) {
+            $wahaStatus = 'OFFLINE';
         }
 
-        // 3. Kirim data ke View Admin
-        return view('admin/kurs', [
-            'title'    => 'Konversi Kurs Terkini MUA',
-            'kurs_usd' => $dataKurs ?? 16200 // Nilai cadangan (fallback) jika internet mati
+        // 🛠️ SEKARANG DIALIKHAN KE VIEW admin/whatsapp
+        return view('admin/whatsapp', [
+            'title'       => 'Integrasi WhatsApp Gateway',
+            'waha_status' => $wahaStatus
         ]);
     }
 }

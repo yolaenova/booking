@@ -37,8 +37,8 @@ $routes->get('bookings/cancel/(:num)', 'Booking::cancel/$1');
     $routes->post('services/save', 'Service::save');
     $routes->get('services/delete/(:num)', 'Service::delete/$1');
 
-    // Komponen 5: Konsumsi API Kurs (Hanya bisa diakses oleh Admin yang login)
-    $routes->get('kurs', 'Admin::kurs');
+    // Komponen 5: Konsumsi API WAHA (Hanya bisa diakses oleh Admin yang login)
+$routes->get('whatsapp', 'Admin::whatsapp');
 });
 
 // =====================================
@@ -74,3 +74,4 @@ $routes->group('staff', ['filter' => ['auth', 'role:staff']], function($routes) 
 // =====================================
 // Ditaruh di luar grup admin agar sistem luar/Postman bisa memanggilnya via token
 $routes->get('api/summary', 'ApiController::getDashboardSummary');
+$routes->post('api/whatsapp/callback', 'ApiController::whatsappCallback');
