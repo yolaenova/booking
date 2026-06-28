@@ -35,7 +35,17 @@
                                 <td><?= $no++; ?></td>
                                 <td><?= $b['customer_name'] ?? $b['user_customer_name'] ?? 'Customer'; ?></td>
                                 <td><?= $b['service_name'] ?? '-'; ?></td>
-                                <td><?= date('d M Y', strtotime($b['booking_date'] ?? $b['date'] ?? date('Y-m-d'))); ?></td>
+                                
+                                <td>
+                                    <?php 
+                                    $tanggal_raw = $b['booking_date'] ?? $b['date'] ?? null;
+                                    if (!empty($tanggal_raw)) {
+                                        echo date('d M Y', strtotime($tanggal_raw));
+                                    } else {
+                                        echo date('d M Y'); // fallback ke tanggal hari ini jika data kosong
+                                    }
+                                    ?>
+                                </td>
                                 
                                 <td>
                                     <?php $status = $b['booking_status'] ?? 'pending'; ?>
