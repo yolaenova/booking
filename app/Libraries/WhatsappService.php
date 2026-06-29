@@ -6,19 +6,16 @@ use Config\Services;
 
 class WhatsappService
 {
-    public $client;
-    public $baseUrl;
-    public $apiKey;
-    public $sessionName;
+    protected $client;
+    protected $baseUrl;
+    protected $apiKey;
+    protected $sessionName;
 
     public function __construct()
     {
-        $this->client      = Services::curlrequest();
-        
-        // ISI LANGSUNG DI SINI SESUAI PANEL PETAPOD KAMU
-        $this->baseUrl     = 'https://project000-05a7.id-1.podo.top'; 
-        $this->apiKey      = '69c71dbb8d50ed0965b2ed1d75e32bba2768222d9bb547bc';  
-        
+        $this->client = Services::curlrequest();
+        $this->baseUrl = 'https://project000-05a7.id-1.podo.top'; 
+        $this->apiKey = '69c71dbb8d50ed0965b2ed1d75e32bba2768222d9bb547bc';  
         $this->sessionName = 'default'; 
     }
 
@@ -27,7 +24,7 @@ class WhatsappService
         $formattedPhone = $this->formatNumber($to);
 
         try {
-            $response = $this->client->request('POST', rtrim($this->baseUrl, '/') . '/api/sendText', [
+            $response = $this->client->request('POST', $this->baseUrl . '/api/sendText', [
                 'headers' => [
                     'Content-Type'  => 'application/json',
                     'Accept'        => 'application/json',
@@ -41,9 +38,13 @@ class WhatsappService
                 'timeout' => 12 
             ]);
 
-            return ($response->getStatusCode() === 200 || $response->getStatusCode() === 201);
+            if ($response->getStatusCode() === 200 || $response->getStatusCode() === 201) {
+                return true;
+            }
+            return false;
+
         } catch (\Exception $e) {
-            log_message('error', 'Gagal kirim WA: ' . $e->getMessage());
+            log_message('error', 'Gagal hit API WAHA PetaPod: ' . $e->getMessage());
             return false;
         }
     }
