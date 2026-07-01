@@ -11,7 +11,7 @@
             <h5 class="card-title">Daftar Pesanan Kamu</h5>
 
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-hover align-middle">
                     <thead>
                         <tr>
                             <th>Tanggal Pasang</th>
@@ -20,6 +20,7 @@
                             <th>Metode</th>
                             <th>Total Harga</th>
                             <th>Status</th>
+                            <th class="text-center">Aksi</th> <!-- Tambah kolom aksi sesuai spesifikasi Poin 8 -->
                         </tr>
                     </thead>
                     <tbody>
@@ -30,14 +31,13 @@
                                 
                                 <td><strong><?= esc($b['service_name'] ?? 'Layanan Makeup') ?></strong></td>
                                 
-                                <td><?= !empty($b['booking_time']) ? date('H:i', strtotime($b['booking_time'])) : '00:00' ?> WIB</td>
+                                <td><?= $b['booking_time'] ?? '09:00 WIB' ?></td>
                                 
                                 <td>
                                     <?php 
-                                        // Kita intip kolom notes untuk mendeteksi metodenya
+                                        // Mempertahankan logika intip kolom notes bawaan untuk mendeteksi metode
                                         $notesCheck = isset($b['notes']) ? strtolower($b['notes']) : '';
 
-                                        // Jika di dalam catatan mengandung kata 'home_service' atau 'home service'
                                         if (strpos($notesCheck, 'home') !== false) {
                                             echo '<span class="badge bg-info text-dark">Home Service</span>';
                                         } else {
@@ -58,11 +58,18 @@
                                         <span class="badge bg-danger">Dibatalkan</span>
                                     <?php endif; ?>
                                 </td>
+
+                                <!-- Tombol Aksi Detail Premium -->
+                                <td class="text-center">
+                                    <a href="<?= base_url('booking/detail/' . $b['id']) ?>" class="btn btn-primary btn-sm px-3">
+                                        <i class="bi bi-eye me-1"></i> Detail
+                                    </a>
+                                </td>
                             </tr>
                             <?php endforeach; ?>
                         <?php else : ?>
                             <tr>
-                                <td colspan="6" class="text-center">Kamu belum memiliki riwayat booking.</td>
+                                <td colspan="7" class="text-center py-4 text-muted">Kamu belum memiliki riwayat booking.</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>

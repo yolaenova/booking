@@ -11,7 +11,7 @@ class BookingModel extends Model
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
     
-    // Field yang diizinkan untuk diinput/disimpan
+    // Field yang diizinkan untuk diinput/disimpan (Sudah disinkronkan dengan MySQL baru)
     protected $allowedFields = [
         'user_id',
         'service_id',
@@ -19,11 +19,11 @@ class BookingModel extends Model
         'total_price',
         'booking_status',
         'payment_status',
-        'booking_date',      
-        'booking_time',      
-        'service_method',    // <--- PASTIKAN TETAP INI YANG ADA DI SINI
-        'customer_address',  
-        'notes'              
+        'notes',
+        'service_type',     // 🟢 Menyimpan gallery / home_service
+        'customer_address', // 🟢 Alamat rumah customer
+        'latitude',         // 🟢 Koordinat peta lintang
+        'longitude'         // 🟢 Koordinat peta bujur
     ];
 
     // Aktifkan otomatisasi waktu (created_at & updated_at)

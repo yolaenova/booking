@@ -12,7 +12,8 @@
                 <div class="card-body">
                     <h5 class="card-title">Form Input Layanan</h5>
 
-                    <form action="/services/save" method="post" enctype="multipart/form-data">
+<!-- PERBAIKAN: Mengarahkan action ke route admin/services/save yang valid -->
+                    <form action="<?= base_url('admin/services/save') ?>" method="post" enctype="multipart/form-data">
                         <?= csrf_field(); ?>
                         
                         <div class="row mb-3">
@@ -60,8 +61,9 @@
                             </div>
                         </div>
 
-                        <div class="text-end">
-                            <a href="/services" class="btn btn-secondary">Batal</a>
+<div class="text-end">
+                            <!-- PERBAIKAN: Tombol batal diarahkan kembali ke daftar layanan admin -->
+                            <a href="<?= base_url('admin/services') ?>" class="btn btn-secondary">Batal</a>
                             <button type="submit" class="btn btn-primary">Simpan Data</button>
                         </div>
                     </form>

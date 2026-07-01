@@ -34,6 +34,32 @@ class CreateBookings extends Migration
                 'unsigned'=>true
             ],
 
+            // --- TAMBAHKAN 3 KOLOM BARU DI SINI ---
+            'service_type'=>[
+                'type'=>'ENUM',
+                'constraint'=>['gallery', 'home_service'],
+                'default'=>'gallery'
+            ],
+
+            // 🟢 BARU: Kolom Alamat yang sebelumnya terlewat dimasukkan
+            'customer_address'=>[
+                'type'=>'TEXT',
+                'null'=>true
+            ],
+
+            'latitude'=>[
+                'type'=>'VARCHAR',
+                'constraint'=>50,
+                'null'=>true
+            ],
+
+            'longitude'=>[
+                'type'=>'VARCHAR',
+                'constraint'=>50,
+                'null'=>true
+            ],
+            // --------------------------------------
+
             'notes'=>[
                 'type'=>'TEXT',
                 'null'=>true

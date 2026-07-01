@@ -1,22 +1,75 @@
 <?= $this->extend('layouts/template') ?>
 <?= $this->section('content') ?>
 
-<h3>Tambah Layanan</h3>
+<div class="pagetitle">
+    <h1>Tambah Layanan</h1>
+</div>
 
-<form action="/services/store" method="post" enctype="multipart/form-data">
+<section class="section">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Form Input Layanan</h5>
 
-<input type="text" name="name" class="form-control mb-2" placeholder="Nama Layanan">
+                    <form action="<?= base_url('admin/services/save') ?>" method="post" enctype="multipart/form-data">
+                        <?= csrf_field(); ?>
+                        
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Nama Layanan</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="name" class="form-control" placeholder="Nama Layanan" required>
+                            </div>
+                        </div>
 
-<textarea name="description" class="form-control mb-2" placeholder="Deskripsi"></textarea>
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Deskripsi</label>
+                            <div class="col-sm-9">
+                                <textarea name="description" class="form-control" rows="3" placeholder="Deskripsi"></textarea>
+                            </div>
+                        </div>
 
-<input type="number" name="price" class="form-control mb-2" placeholder="Harga">
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Harga (Rp)</label>
+                            <div class="col-sm-9">
+                                <input type="number" name="price" class="form-control" placeholder="Harga" required>
+                            </div>
+                        </div>
 
-<input type="number" name="duration" class="form-control mb-2" placeholder="Durasi (menit)">
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Durasi (Menit)</label>
+                            <div class="col-sm-9">
+                                <input type="number" name="duration" class="form-control" placeholder="Durasi (menit)">
+                            </div>
+                        </div>
 
-<input type="file" name="photo" class="form-control mb-2">
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Status</label>
+                            <div class="col-sm-9">
+                                <select name="status" class="form-select">
+                                    <option value="active">Aktif</option>
+                                    <option value="inactive">Non-Aktif</option>
+                                </select>
+                            </div>
+                        </div>
 
-<button class="btn btn-success">Simpan</button>
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Foto Layanan</label>
+                            <div class="col-sm-9">
+                                <input type="file" name="photo" class="form-control" accept="image/*" required>
+                            </div>
+                        </div>
 
-</form>
+                        <div class="text-end">
+                            <a href="<?= base_url('admin/services') ?>" class="btn btn-secondary">Batal</a>
+                            <button type="submit" class="btn btn-primary">Simpan Data</button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
 <?= $this->endSection() ?>

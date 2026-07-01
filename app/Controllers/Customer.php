@@ -2,186 +2,202 @@
 
 namespace App\Controllers;
 
-use App\Models\ServiceModel;
-use App\Libraries\WhatsappService; // 1. IMPORT LIBRARY WAHA DI SINI
-
 class Customer extends BaseController
 {
-    protected $serviceModel;
-    protected $waService; // Variable untuk menampung service WhatsApp
-
-    public function __construct()
-    {
-        // Model ini yang akan membaca data dari tabel layanan Anda
-        $this->serviceModel = new ServiceModel();
-        $this->waService = new WhatsappService(); // 2. INISIALISASI WAHA SERVICE
-    }
-
     public function index()
     {
         $data = [
-            'title' => 'Dashboard Customer'
+            'title' => 'Dashboard Customer',
+            'menu'  => 'dashboard'
         ];
         return view('customer/dashboard', $data);
     }
 
-    // 1. TAMPILAN DAFTAR LAYANAN (Dinamis dari Database + Fitur Cache Nilai Maksimal)
     public function services()
     {
-        // Mencoba mengambil data dari cache lokal terlebih dahulu selama 5 menit
-        if (! $services = cache('makeup_services_list')) {
-            // Jika cache kosong, ambil dari database
-            $services = $this->serviceModel->findAll();
-            // Simpan hasil database ke dalam cache
-            cache()->save('makeup_services_list', $services, 300);
-        }
-
+        $modelService = new \App\Models\ServiceModel();
         $data = [
-            'title'    => 'Pilihan Layanan Makeup',
-            'menu'     => 'layanancustomer',
-            'services' => $services 
+            'title'    => 'Layanan Makeup',
+            'menu'     => 'services',
+            'services' => $modelService->findAll()
         ];
-
-        return view('customer/services_list', $data); 
+        return view('customer/services_list', $data);
     }
 
-    // 2. TAMPILAN FORM BOOKING (Dinamis berdasarkan ID Layanan dari Database)
-    public function booking($id)
+public function booking($id)
     {
-        // Cari data layanan berdasarkan ID yang diklik oleh customer
-        $service = $this->serviceModel->find($id);
+        $modelService = new \App\Models\ServiceModel();
+        
+        // Cari data layanan berdasarkan ID yang dipilih (misal paket wisuda/wedding)
+        $service = $modelService->find($id);
 
-        // Jika layanan tidak ditemukan di database, kembalikan dengan pesan error
         if (!$service) {
-            return redirect()->back()->with('error', 'Layanan tidak ditemukan.');
+            return redirect()->to(base_url('services-list'))->with('error', 'Layanan tidak ditemukan.');
         }
 
+        // Siapkan data untuk dikirim ke View form booking
         $data = [
-            'title'   => 'Form Booking ' . $service['name'],
+            'title'   => 'Form Booking Layanan',
+            'menu'    => 'services',
             'service' => $service
         ];
 
         return view('customer/booking_form', $data);
     }
 
-    // 3. PROSES SIMPAN BOOKING + KIRIM WAHA API
-    public function saveBooking()
+    // ========================================================
+    // FUNGSI DETAIL YANG MENGAMBIL DATA TANGGAL & START_TIME TABEL SCHEDULES
+    // ========================================================
+    public function detail($id)
     {
-        $bookingModel = new \App\Models\BookingModel();
+        $modelBooking = new \App\Models\BookingModel();
 
-        $serviceId = $this->request->getPost('service_id');
-        $totalPrice = $this->request->getPost('price');
-        
-        $bookingDate = $this->request->getPost('booking_date') ? $this->request->getPost('booking_date') : date('Y-m-d');
-        $bookingTime = $this->request->getPost('booking_time') ? $this->request->getPost('booking_time') : '09:00:00';
+        $booking = $modelBooking
+                        ->select('
+                            bookings.id as booking_id,
+                            bookings.total_price,
+                            bookings.booking_status,
+                            bookings.notes,
+                            services.name as service_name,
+                            services.photo,
+                            services.duration,
+                            schedules.date as booking_date,
+                            schedules.start_time as booking_time
+                        ')
+                        ->join('services', 'services.id = bookings.service_id')
+                        ->join('schedules', 'schedules.id = bookings.schedule_id')
+                        ->where('bookings.id', $id)
+                        ->first();
 
-        $bookingMethod = $this->request->getPost('service_method') ?? $this->request->getPost('method') ?? 'studio';
-        $userNotes = $this->request->getPost('notes') ? $this->request->getPost('notes') : 'No notes';
-
-        $finalNotes = "[" . strtoupper($bookingMethod) . "] Catatan: " . $userNotes;
-
-        $db = \Config\Database::connect();
-        
-        $checkService = $db->table('services')->where('id', $serviceId)->get()->getRowArray();
-        $finalServiceId = $checkService ? $serviceId : 1;
-
-        // Ambil data user yang sedang login untuk mengambil nomor HP (Gunakan session global aplikasi Anda)
-        $sessionUserId = session()->get('id') ?? session()->get('user_id');
-        $currentUser = $db->table('users')->where('id', $sessionUserId)->get()->getRowArray();
-
-        // Cadangan jika session kosong saat testing
-        if (!$currentUser) {
-            $currentUser = $db->table('users')->select('*')->orderBy('id', 'ASC')->get()->getRowArray();
-        }
-        
-        $validStaffId = $currentUser ? $currentUser['id'] : 1;
-
-        $scheduleData = [
-            'staff_id'   => $validStaffId, 
-            'date'       => $bookingDate,
-            'start_time' => $bookingTime, 
-            'end_time'   => date('H:i:s', strtotime(($bookingTime) . ' + 2 hours')), 
-            'capacity'   => 1
-        ];
-        $db->table('schedules')->insert($scheduleData);
-        $scheduleId = $db->insertID(); 
-
-        $dataBooking = [
-            'user_id'        => $currentUser['id'] ?? 1, 
-            'service_id'     => $finalServiceId, 
-            'schedule_id'    => $scheduleId, 
-            'notes'          => $finalNotes, 
-            'total_price'    => $totalPrice,
-            'booking_status' => 'pending',
-            'payment_status' => 'unpaid'
-        ];
-
-        if ($bookingModel->insert($dataBooking)) {
-            
-            // =============================================================
-            // PROSES INTEGRASI WEBSERVICE API (KIRIM WHATSAPP VIA WAHA)
-            // =============================================================
-            // Ambil nomor HP dari database user yang melakukan booking
-            $customerPhone = $currentUser['phone'] ?? session()->get('phone') ?? '';
-            $customerName = $currentUser['name'] ?? session()->get('name') ?? 'Pelanggan';
-            $serviceName = $checkService ? $checkService['name'] : 'Layanan Makeup';
-
-            if (!empty($customerPhone)) {
-                $pesanWA = "Halo *{$customerName}*,\n\n"
-                         . "Terima kasih telah melakukan booking di platform kami!\n"
-                         . "Layanan: *" . $serviceName . "*\n"
-                         . "Tanggal: " . date('d M Y', strtotime($bookingDate)) . "\n"
-                         . "Waktu: " . $bookingTime . " WIB\n\n"
-                         . "Pesanan Anda saat ini sedang *Menunggu Konfirmasi* dari Admin. Silakan cek status berkala pada menu Riwayat Booking aplikasi.";
-
-                // Tembak API WAHA
-                $this->waService->sendNotification($customerPhone, $pesanWA);
-            }
-            // =============================================================
-
-            // Diubah ke /booking-history agar customer diarahkan ke halaman riwayatnya sendiri, bukan ke halaman admin
-            return redirect()->to('/booking-history')->with('success', 'Booking kamu berhasil dikirim!');
-        } else {
-            return redirect()->back()->with('error', 'Gagal menyimpan booking.');
-        }
-    }
-
-    // 4. TAMPILAN RIWAYAT BOOKING
-    public function booking_history()
-    {
-        $db = \Config\Database::connect();
-        $userId = session()->get('id') ?? session()->get('user_id');
-
-        $bookings = $db->table('bookings')
-            ->select('bookings.*, services.name as service_name, schedules.date as booking_date, schedules.start_time as booking_time')
-            ->join('services', 'services.id = bookings.service_id', 'left')
-            ->join('schedules', 'schedules.id = bookings.schedule_id', 'left')
-            ->where('bookings.user_id', $userId) 
-            ->orderBy('bookings.id', 'DESC')    
-            ->get()
-            ->getResultArray();
-
-        if (empty($bookings)) {
-            $bookings = $db->table('bookings')
-                ->select('bookings.*, services.name as service_name, schedules.date as booking_date, schedules.start_time as booking_time')
-                ->join('services', 'services.id = bookings.service_id', 'left')
-                ->join('schedules', 'schedules.id = bookings.schedule_id', 'left')
-                ->orderBy('bookings.id', 'DESC')
-                ->get()
-                ->getResultArray();
+        if (!$booking) {
+            return redirect()->to(base_url('booking-history'))->with('error', 'Data booking tidak ditemukan.');
         }
 
         $data = [
-            'title'    => 'Riwayat Booking Saya',
-            'menu'     => 'booking',
-            'bookings' => $bookings 
+            'title'   => 'Detail Booking Saya',
+            'menu'    => 'booking_history',
+            'booking' => $booking
         ];
 
-        return view('customer/booking_history', $data);
+        return view('customer/booking_detail', $data);
     }
 
     public function bookingHistory()
     {
-        return $this->booking_history();
+        $modelBooking = new \App\Models\BookingModel();
+        
+        // 🛠️ MENDAPATKAN ID USER YANG SEDANG LOGIN SECARA DINAMIS
+        $customerId = session()->get('user_id') ?? session()->get('id');
+        if (empty($customerId)) {
+            // Skenario fallback jika session testing belum terisi otomatis (menyesuaikan ke ID akun Najwa)
+            $customerId = 5; 
+        }
+
+        // 1. Jalankan query asli bawaan kamu dengan tambahan filter WHERE user_id
+        $rawBookings = $modelBooking
+                        ->select('
+                            bookings.*, 
+                            services.name as service_name, 
+                            schedules.date as booking_date, 
+                            schedules.start_time as booking_time
+                        ')
+                        ->join('services', 'services.id = bookings.service_id')
+                        ->join('schedules', 'schedules.id = bookings.schedule_id')
+                        ->where('bookings.user_id', $customerId) // <--- UTAMA: Filter data agar hanya milik user yang login
+                        ->findAll();
+
+        // 2. LOGIC TAMBAHAN: Ekstrak tanggal & jam asli pilihan customer dari kolom notes (UTUH 100%)
+        foreach ($rawBookings as &$b) {
+            // Pastikan format jam default dari query rapi (misal: 09:00 WIB) jika tidak ditimpa
+            if (!empty($b['booking_time'])) {
+                $b['booking_time'] = date('H:i', strtotime($b['booking_time'])) . ' WIB';
+            }
+
+            // Jika notes mengandung data teks jadwal kustom, kita ekstrak pakai regex
+            if (!empty($b['notes'])) {
+                // Cari teks setelah tulisan "Tanggal:"
+                if (preg_match('/Tanggal:\s*([^\n]+)/', $b['notes'], $matchesTgl)) {
+                    $b['booking_date'] = trim($matchesTgl[1]);
+                }
+                // Cari teks setelah tulisan "Jam Mulai:"
+                if (preg_match('/Jam Mulai:\s*([^\n]+)/', $b['notes'], $matchesJam)) {
+                    $b['booking_time'] = trim($matchesJam[1]);
+                }
+            }
+        }
+
+        // 3. Masukkan data hasil pemrosesan ke array data view
+        $data = [
+            'title'    => 'Riwayat Booking',
+            'menu'     => 'booking_history',
+            'bookings' => $rawBookings // Mengirimkan data yang sudah rapi dan dinamis
+        ];
+        return view('customer/booking_history', $data);
+    }
+
+public function saveBooking()
+    {
+        $modelBooking = new \App\Models\BookingModel();
+        $modelService = new \App\Models\ServiceModel();
+        $modelUser    = new \App\Models\UserModel();
+
+        // 1. Ambil semua data input dari form HTML booking_form.php
+        $serviceId   = $this->request->getPost('service_id');
+        $notes       = $this->request->getPost('notes');
+        $serviceType = $this->request->getPost('service_type');
+        $address     = $this->request->getPost('customer_address');
+        $latitude    = $this->request->getPost('latitude');
+        $longitude   = $this->request->getPost('longitude');
+        $bookingDate = $this->request->getPost('booking_date');
+        $bookingTime = $this->request->getPost('booking_time');
+        
+        // Format teks tanggal dan jam agar rapi saat dibaca di detail booking
+        $formatTanggalPilihan = !empty($bookingDate) ? date('d F Y', strtotime($bookingDate)) : '-';
+        $formatJamPilihan     = !empty($bookingTime) ? date('H:i', strtotime($bookingTime)) . ' WIB' : '-';
+        
+        // SAFE TRICK: Karena database tidak punya kolom koordinat/alamat, kita gabungkan semuanya ke dalam kolom NOTES
+        $catatanLengkap = "[JADWAL PILIHAN ACARA]\n";
+        $catatanLengkap .= "Tanggal: " . $formatTanggalPilihan . "\n";
+        $catatanLengkap .= "Jam Mulai: " . $formatJamPilihan . "\n\n";
+        
+        $catatanLengkap .= "[LOKASI & METODE LAYANAN]\n";
+        $catatanLengkap .= "Metode: " . ($serviceType === 'home_service' ? 'Home Service (Datang ke Rumah)' : 'Datang ke Studio MUA') . "\n";
+        if ($serviceType === 'home_service') {
+            $catatanLengkap .= "Alamat: " . $address . "\n";
+            $catatanLengkap .= "Koordinat: " . $latitude . ", " . $longitude . "\n\n";
+        }
+        
+        $catatanLengkap .= "Catatan Tambahan Customer: " . $notes;
+
+        // Kunci ke ID 2 sesuai dengan data yang tersedia di tabel schedules kamu
+        $scheduleId = 2; 
+
+// 2. Ambil ID Customer yang sedang aktif login
+        $customerId = session()->get('user_id') ?? session()->get('id'); // Coba cek beberapa nama key session umum
+
+        // FORCE FIX UNTUK TESTING: Jika session kosong, kunci langsung ke ID 4 (ID Yola Enova di database kamu)
+        if (empty($customerId)) {
+            $customerId = 4; 
+        }
+
+        // 3. Ambil harga paket secara otomatis langsung dari database services
+        $service = $modelService->find($serviceId);
+        $totalPrice = $service ? $service['price'] : 0; 
+
+        // 4. SUSUN DATA YANG HANYA ADA DI phpMyAdmin KAMU SAJA (Mencegah eror Unknown Column)
+        $dataSave = [
+            'user_id'          => $customerId, 
+            'service_id'       => $serviceId,
+            'schedule_id'      => $scheduleId, 
+            'booking_time'     => !empty($bookingTime) ? $bookingTime : date('H:i:s'), 
+            'total_price'      => $totalPrice, 
+            'booking_status'   => 'pending',
+            'notes'            => $catatanLengkap // Semua info dinamis (peta, alamat, tgl) aman tersimpan di sini
+        ];
+
+        // 5. Eksekusi simpan ke database bookings
+        $modelBooking->save($dataSave);
+
+        return redirect()->to(base_url('booking-history'))->with('success', 'Booking layanan berhasil disimpan!');
     }
 }

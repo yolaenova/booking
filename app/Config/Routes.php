@@ -59,6 +59,12 @@ $routes->group('', ['filter' => ['auth', 'role:customer']], function($routes) {
     // 3. Riwayat Booking
     $routes->get('booking-history', 'Customer::bookingHistory'); // Dibuka saat klik menu Booking
     $routes->get('bookings', 'Customer::bookingHistory');        // Cadangan/pintu darurat
+
+    // Rute utama (Tanpa prefix)
+    $routes->get('booking/detail/(:num)', 'Customer::detail/$1');
+    
+    // FIX: Rute Detail Booking Baru untuk Poin 8 (Mengarah ke Controller Customer fungsi detail)
+    $routes->get('customer/booking/detail/(:num)', 'Customer::detail/$1');
 });
 
 // =====================================
@@ -75,3 +81,9 @@ $routes->group('staff', ['filter' => ['auth', 'role:staff']], function($routes) 
 // Ditaruh di luar grup admin agar sistem luar/Postman bisa memanggilnya via token
 $routes->get('api/summary', 'ApiController::getDashboardSummary');
 $routes->post('api/whatsapp/callback', 'ApiController::whatsappCallback');
+
+// Route Endpoint RESTful API untuk Poin 6
+$routes->get('api/bookings', '\App\Controllers\BookingApiController::getAllBookings');
+
+// =================Rute Dokumentasi==================== 
+$routes->get('admin/api-documentation', '\App\Controllers\BookingApiController::documentation');

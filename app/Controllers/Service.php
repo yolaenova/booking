@@ -56,7 +56,8 @@ public function index()
             'photo'       => $filename
         ]);
 
-        return redirect()->to('/services')->with('success', 'Layanan berhasil ditambahkan.');
+ // FIX REDIRECT: Tetap berada di halaman daftar layanan admin setelah sukses menambah data
+        return redirect()->to(base_url('admin/services'))->with('success', 'Layanan berhasil ditambahkan.');
     }
 
     public function edit($id)
@@ -95,7 +96,8 @@ public function index()
             'photo'       => $filename
         ]);
 
-        return redirect()->to('/services')->with('success', 'Layanan berhasil diupdate.');
+// FIX REDIRECT: Tetap berada di halaman daftar layanan admin setelah sukses mengupdate data
+        return redirect()->to(base_url('admin/services'))->with('success', 'Layanan berhasil diupdate.');
     }
 
     public function delete($id)
@@ -109,6 +111,7 @@ public function index()
 
         $this->serviceModel->delete($id);
 
-        return redirect()->to('/services')->with('success', 'Layanan berhasil dihapus.');
+// FIX REDIRECT: Tetap berada di halaman daftar layanan admin setelah sukses menghapus data
+        return redirect()->to(base_url('admin/services'))->with('success', 'Layanan berhasil dihapus.');
     }
 }
