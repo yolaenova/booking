@@ -1,5 +1,6 @@
 <?= $this->extend('layouts/template') ?>
 <?= $this->section('content') ?>
+<?php /** @var array $booking */ ?>
 
 <div class="pagetitle mb-4 d-flex justify-content-between align-items-center">
     <div>
@@ -16,6 +17,13 @@
         <i class="bi bi-arrow-left me-1"></i> Kembali
     </a>
 </div>
+
+<?php if(session()->getFlashdata('success')): ?>
+    <div class="alert alert-success alert-dismissible fade show">
+        <?= session()->getFlashdata('success') ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<?php endif; ?>
 
 <section class="section">
     <div class="row">
@@ -110,6 +118,30 @@
                         <span class="fw-bold text-primary fs-4">Rp <?= number_format($booking['total_price'] ?? 0, 0, ',', '.') ?></span>
                     </div>
                     <small class="text-muted d-block text-end mb-0">Metode: Cash / Transfer Bank</small>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body p-4">
+                    <h5 class="card-title">Pembayaran</h5>
+
+                    <?php $payment = $booking['payment_status'] ?? 'unpaid'; ?>
+
+                    <p class="mb-2"><strong>Transfer Bank:</strong></p>
+                    <p class="mb-1">BCA: 1234567890</p>
+                    <p class="mb-3">a.n. MUA Elegance</p>
+
+                    <?php if ($payment == 'paid'): ?>
+                        <span class="badge bg-success mb-3">Sudah Dibayar</span>
+                    <?php else: ?>
+                        <span class="badge bg-warning text-dark mb-3">Belum Dibayar</span>
+
+                        <a href="<?= base_url('booking/pay/' . $booking['booking_id']) ?>"
+                        class="btn btn-primary w-100"
+                        onclick="return confirm('Konfirmasi bahwa Anda sudah transfer?')">
+                            Saya Sudah Bayar
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
 

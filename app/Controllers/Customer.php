@@ -57,6 +57,7 @@ public function booking($id)
                             bookings.id as booking_id,
                             bookings.total_price,
                             bookings.booking_status,
+                            bookings.payment_status,
                             bookings.notes,
                             services.name as service_name,
                             services.photo,
@@ -200,4 +201,14 @@ public function saveBooking()
 
         return redirect()->to(base_url('booking-history'))->with('success', 'Booking layanan berhasil disimpan!');
     }
+    public function pay($id)
+{
+    $modelBooking = new \App\Models\BookingModel();
+
+    $modelBooking->update($id, [
+        'payment_status' => 'paid'
+    ]);
+
+    return redirect()->back()->with('success', 'Pembayaran berhasil dikonfirmasi. Menunggu verifikasi admin.');
+}
 }

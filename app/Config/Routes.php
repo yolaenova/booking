@@ -62,6 +62,8 @@ $routes->group('', ['filter' => ['auth', 'role:customer']], function($routes) {
 
     // Rute utama (Tanpa prefix)
     $routes->get('booking/detail/(:num)', 'Customer::detail/$1');
+
+    $routes->get('booking/pay/(:num)', 'Customer::pay/$1');
     
     // FIX: Rute Detail Booking Baru untuk Poin 8 (Mengarah ke Controller Customer fungsi detail)
     $routes->get('customer/booking/detail/(:num)', 'Customer::detail/$1');
