@@ -47,6 +47,9 @@ class Booking extends BaseController
             $b['real_method']  = 'gallery'; 
             $b['real_address'] = 'Pelanggan memilih datang langsung ke studio MUA.';
 
+            $b['latitude']     = null; // Reset nilai
+            $b['longitude']    = null; // Reset nilai
+
             // Bongkar teks di kolom notes untuk mencari jadwal kustom kiriman form customer
             if (!empty($b['notes'])) {
                 if (preg_match('/Tanggal:\s*([^\n]+)/', $b['notes'], $matchesTgl)) {
@@ -60,6 +63,10 @@ class Booking extends BaseController
                 }
                 if (preg_match('/Alamat:\s*([^\n]+)/', $b['notes'], $matchesAlamat)) {
                     $b['real_address'] = trim($matchesAlamat[1]);
+                }
+                if (preg_match('/Koordinat:\s*([-]?\d+\.\d+),\s*([-]?\d+\.\d+)/', $b['notes'], $matchesGeo)) {
+                    $b['latitude']  = trim($matchesGeo[1]);
+                    $b['longitude'] = trim($matchesGeo[2]);
                 }
             }
         }
@@ -75,8 +82,9 @@ class Booking extends BaseController
     }
 
     // Memproses penyimpanan data manual oleh admin
-    public function save()
+public function save()
     {
+        // 1. Validasi tetap sama agar tidak merusak fungsi sebelumnya
         if (!$this->validate([
             'customer_name' => 'required',
             'service_id'    => 'required',
@@ -86,12 +94,25 @@ class Booking extends BaseController
             return redirect()->back()->withInput();
         }
 
+        // 2. Tangkap data koordinat dan notes dari input form
+        $lat   = $this->request->getPost('latitude');
+        $lng   = $this->request->getPost('longitude');
+        $notes = $this->request->getPost('notes') ?? '';
+
+        // 3. Gabungkan koordinat ke dalam notes jika ada
+        // Logika ini memastikan database menyimpan koordinat unik untuk setiap booking
+        if (!empty($lat) && !empty($lng)) {
+            $notes .= "\nKoordinat: " . $lat . ", " . $lng;
+        }
+
+        // 4. Simpan ke model (Menambahkan field 'notes' ke dalam array)
         $this->bookingModel->save([
             'user_id'        => null, 
             'customer_name'  => $this->request->getPost('customer_name'), 
             'service_id'     => $this->request->getPost('service_id'),
             'booking_date'   => $this->request->getPost('booking_date'),
             'total_price'    => $this->request->getPost('total_price'),
+            'notes'          => $notes, // Field baru ditambahkan di sini
             'booking_status' => 'pending' 
         ]);
 

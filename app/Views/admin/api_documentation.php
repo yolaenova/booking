@@ -37,11 +37,7 @@
                             <td><span class="badge bg-info text-dark">Application/JSON</span></td>
                         </tr>
                     </table>
-                    
-                    <div class="alert alert-warning py-3 small mt-4 mb-0 shadow-sm">
-                        <strong>Keterangan Riset / Rubrik:</strong><br>
-                        Endpoint ini berfungsi untuk mendistribusikan data spasial koordinat lokasi (`latitude` & `longitude`) dari pesanan booking MUA secara real-time ke aplikasi eksternal (client/mobile).
-                    </div>
+                
                 </div>
             </div>
         </div>
