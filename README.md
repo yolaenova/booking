@@ -7,7 +7,7 @@ Berikut adalah dokumentasi tampilan aplikasi MUA Booking:
 
 | Dashboard | Booking Data | Service List | Detail Booking |
 | :---: | :---: | :---: | :---: |
-| ![SS1](public/assets/docs/ss1.png) | ![SS2](public/assets/docs/ss2.png) | ![SS3](public/assets/docs/ss3.png) | ![SS4](public/assets/docs/ss4.png) |
+| ![SS1](public/assets/docs/ss1.png) | ![SS2](public/assets/docs/ss2.png) | ![SS3](public/assets/docs/ss3.png) | ![SS5](public/assets/docs/ss5.png) |
 
 ## Deskripsi Sistem
 Aplikasi MUA Booking memfasilitasi dua alur layanan utama:
