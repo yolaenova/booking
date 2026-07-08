@@ -40,4 +40,4 @@ Aplikasi MUA Booking memfasilitasi dua alur layanan utama:
 
 ## 👤 Pengembang
 - Najwa Handaria Suparna (A11.2024.16039)
-- Yola Enova Sabilla (A11.2024.16039) 
+- Yola Enova Sabilla (A11.2024.16049) 
