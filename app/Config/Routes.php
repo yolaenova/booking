@@ -89,7 +89,6 @@ $routes->group('staff', ['filter' => ['auth', 'role:staff']], function($routes) 
 // Ditaruh di luar grup admin agar sistem luar/Postman bisa memanggilnya via token
 $routes->get('api/summary', 'ApiController::getDashboardSummary');
 $routes->post('api/whatsapp/callback', 'ApiController::whatsappCallback');
-
 // Route Endpoint RESTful API untuk Poin 6
 $routes->get('api/bookings', '\App\Controllers\BookingApiController::getAllBookings');
 
