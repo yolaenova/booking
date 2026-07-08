@@ -67,6 +67,12 @@ $routes->group('', ['filter' => ['auth', 'role:customer']], function($routes) {
     
     // FIX: Rute Detail Booking Baru untuk Poin 8 (Mengarah ke Controller Customer fungsi detail)
     $routes->get('customer/booking/detail/(:num)', 'Customer::detail/$1');
+
+    $routes->get('payment/(:num)', 'Payment::pay/$1');
+
+    $routes->post('payment/callback', 'Payment::callback');
+
+    $routes->post('payment/success', 'Payment::success');
 });
 
 // =====================================
@@ -86,6 +92,13 @@ $routes->post('api/whatsapp/callback', 'ApiController::whatsappCallback');
 
 // Route Endpoint RESTful API untuk Poin 6
 $routes->get('api/bookings', '\App\Controllers\BookingApiController::getAllBookings');
+
+$routes->get('api/services', '\App\Controllers\ServiceApiController::getServices');
+
+$routes->get(
+    'api/booking-status/(:num)',
+    '\App\Controllers\BookingApiController::bookingStatus/$1'
+);
 
 // =================Rute Dokumentasi==================== 
 $routes->get('admin/api-documentation', '\App\Controllers\BookingApiController::documentation');

@@ -56,4 +56,35 @@ public function documentation()
         ];
         return view('admin/api_documentation', $data);
     }
+
+public function bookingStatus($id)
+{
+    $apiKey = $this->request->getHeaderLine('X-API-KEY');
+
+    if ($apiKey !== 'MUA_SECRET_KEY_2026') {
+        return $this->response->setJSON([
+            'status' => 401,
+            'error' => true,
+            'message' => 'Unauthorized'
+        ])->setStatusCode(401);
+    }
+
+    $booking = $this->bookingModel
+        ->select('id,total_price,booking_status,payment_status')
+        ->find($id);
+
+    if (!$booking) {
+        return $this->response->setJSON([
+            'status'=>404,
+            'error'=>true,
+            'message'=>'Booking tidak ditemukan'
+        ])->setStatusCode(404);
+    }
+
+    return $this->response->setJSON([
+        'status'=>200,
+        'error'=>false,
+        'data'=>$booking
+    ]);
+}
 }

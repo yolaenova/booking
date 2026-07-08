@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+
 class Customer extends BaseController
 {
     public function index()
@@ -53,18 +54,19 @@ public function booking($id)
         $modelBooking = new \App\Models\BookingModel();
 
         $booking = $modelBooking
-                        ->select('
-                            bookings.id as booking_id,
-                            bookings.total_price,
-                            bookings.booking_status,
-                            bookings.payment_status,
-                            bookings.notes,
-                            services.name as service_name,
-                            services.photo,
-                            services.duration,
-                            schedules.date as booking_date,
-                            schedules.start_time as booking_time
-                        ')
+            ->select('
+                bookings.id as booking_id,
+                bookings.user_id,
+                bookings.total_price,
+                bookings.booking_status,
+                bookings.payment_status,
+                bookings.notes,
+                services.name as service_name,
+                services.photo,
+                services.duration,
+                schedules.date as booking_date,
+                schedules.start_time as booking_time
+            ')
                         ->join('services', 'services.id = bookings.service_id')
                         ->join('schedules', 'schedules.id = bookings.schedule_id')
                         ->where('bookings.id', $id)
@@ -202,13 +204,13 @@ public function saveBooking()
         return redirect()->to(base_url('booking-history'))->with('success', 'Booking layanan berhasil disimpan!');
     }
     public function pay($id)
-{
-    $modelBooking = new \App\Models\BookingModel();
+    {
+        $modelBooking = new \App\Models\BookingModel();
 
-    $modelBooking->update($id, [
-        'payment_status' => 'paid'
-    ]);
+        $modelBooking->update($id, [
+            'payment_status' => 'paid'
+        ]);
 
-    return redirect()->back()->with('success', 'Pembayaran berhasil dikonfirmasi. Menunggu verifikasi admin.');
-}
+        return redirect()->back()->with('success', 'Pembayaran berhasil dikonfirmasi. Menunggu verifikasi admin.');
+    }
 }

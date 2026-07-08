@@ -136,10 +136,11 @@
                     <?php else: ?>
                         <span class="badge bg-warning text-dark mb-3">Belum Dibayar</span>
 
-                        <a href="<?= base_url('booking/pay/' . $booking['booking_id']) ?>"
-                        class="btn btn-primary w-100"
-                        onclick="return confirm('Konfirmasi bahwa Anda sudah transfer?')">
-                            Saya Sudah Bayar
+                        <a href="<?= base_url('payment/'.$booking['booking_id']) ?>"
+                        class="btn btn-success">
+
+                        Bayar Sekarang
+
                         </a>
                     <?php endif; ?>
                 </div>

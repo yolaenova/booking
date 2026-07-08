@@ -6,6 +6,7 @@ use App\Models\BookingModel;
 use App\Models\ServiceModel; 
 use App\Models\UserModel;
 use App\Libraries\WhatsappService; 
+use App\Models\ScheduleModel;
 
 class Booking extends BaseController
 {
@@ -81,42 +82,54 @@ class Booking extends BaseController
         return view('admin/bookings', $data);
     }
 
-    // Memproses penyimpanan data manual oleh admin
-public function save()
+    public function create()
     {
-        // 1. Validasi tetap sama agar tidak merusak fungsi sebelumnya
-        if (!$this->validate([
-            'customer_name' => 'required',
-            'service_id'    => 'required',
-            'booking_date'  => 'required',
-            'total_price'   => 'required|numeric',
-        ])) {
-            return redirect()->back()->withInput();
-        }
+        $serviceModel = new ServiceModel();
+        $userModel = new UserModel();
+        $scheduleModel = new \App\Models\ScheduleModel();
 
-        // 2. Tangkap data koordinat dan notes dari input form
-        $lat   = $this->request->getPost('latitude');
-        $lng   = $this->request->getPost('longitude');
-        $notes = $this->request->getPost('notes') ?? '';
+        $data = [
+            'title'      => 'Tambah Booking',
+            'menu'       => 'booking',
+            'services'   => $serviceModel->findAll(),
+            'customers'  => $userModel->where('role', 'customer')->findAll(),
+            'schedules'  => $scheduleModel->findAll()
+        ];
 
-        // 3. Gabungkan koordinat ke dalam notes jika ada
-        // Logika ini memastikan database menyimpan koordinat unik untuk setiap booking
-        if (!empty($lat) && !empty($lng)) {
-            $notes .= "\nKoordinat: " . $lat . ", " . $lng;
-        }
+        return view('admin/booking_create', $data);
+    }
 
-        // 4. Simpan ke model (Menambahkan field 'notes' ke dalam array)
+    // Memproses penyimpanan data manual oleh admin
+    public function save()
+    {
         $this->bookingModel->save([
-            'user_id'        => null, 
-            'customer_name'  => $this->request->getPost('customer_name'), 
-            'service_id'     => $this->request->getPost('service_id'),
-            'booking_date'   => $this->request->getPost('booking_date'),
-            'total_price'    => $this->request->getPost('total_price'),
-            'notes'          => $notes, // Field baru ditambahkan di sini
-            'booking_status' => 'pending' 
+
+            'user_id' => $this->request->getPost('user_id'),
+
+            'service_id' => $this->request->getPost('service_id'),
+
+            'schedule_id' => $this->request->getPost('schedule_id'),
+
+            'service_type' => $this->request->getPost('service_type'),
+
+            'customer_address' => $this->request->getPost('customer_address'),
+
+            'latitude' => $this->request->getPost('latitude'),
+
+            'longitude' => $this->request->getPost('longitude'),
+
+            'notes' => $this->request->getPost('notes'),
+
+            'total_price' => $this->request->getPost('total_price'),
+
+            'booking_status' => 'pending',
+
+            'payment_status' => 'unpaid'
+
         ]);
 
-        return redirect()->to('/admin/bookings')->with('success', 'Booking manual berhasil disimpan.');
+        return redirect()->to('/admin/bookings')
+            ->with('success','Booking berhasil ditambahkan');
     }
 
     // Aksi Konfirmasi Booking Admin + WA Otomatis PetaPod
