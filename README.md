@@ -34,35 +34,35 @@ Aplikasi MUA Booking memfasilitasi dua alur layanan utama:
    ```bash
    composer install
    ```
-   Perintah ini akan membuat folder `vendor/` berisi CodeIgniter 4 dan library pendukung (termasuk Midtrans SDK), sesuai versi yang terkunci di `composer.lock`. Folder `vendor/` tidak di-commit ke repository.
-
-3. **Salin file environment**
+   Perintah ini akan membuat folder `vendor/` berisi CodeIgniter 4 dan library pendukung (termasuk Midtrans SDK), sesuai versi yang terkunci di `composer.lock`.
+   
+4. **Salin file environment**
    ```bash
    cp env .env
    ```
    (Di Windows tanpa Git Bash, cukup duplikat file `env` lalu ganti nama menjadi `.env`)
 
-4. **Buat database**
+5. **Buat database**
    Buat database baru bernama `booking` di MySQL (misalnya lewat phpMyAdmin atau `CREATE DATABASE booking;`).
 
-5. **Sesuaikan isi file `.env`** — lihat detail di bagian [Konfigurasi .env](#konfigurasi-env).
+6. **Sesuaikan isi file `.env`** — lihat detail di bagian [Konfigurasi .env](#konfigurasi-env).
 
-6. **Jalankan migration**
+7. **Jalankan migration**
    ```bash
    php spark migrate
    ```
 
-7. **Jalankan seeder** (mengisi data awal: akun admin, staff, dan data layanan)
+8. **Jalankan seeder** (mengisi data awal: akun admin, staff, dan data layanan)
    ```bash
    php spark db:seed DatabaseSeeder
    ```
 
-8. **Jalankan server**
+9. **Jalankan server**
    ```bash
    php spark serve
    ```
 
-9. Buka aplikasi di browser: `http://localhost:8080`
+10. Buka aplikasi di browser: `http://localhost:8080`
 
 ## Konfigurasi .env
 
@@ -87,7 +87,7 @@ midtrans.clientKey    = your-midtrans-client-key
 midtrans.isProduction = false
 ```
 
-> **Catatan:** `serverKey` dan `clientKey` didapat dari dashboard Midtrans Sandbox (mode sandbox untuk testing, atau production untuk transaksi asli). Jangan pernah mem-push file `.env` yang sudah berisi key asli ke repository publik.
+> **Catatan:** `serverKey` dan `clientKey` didapat dari dashboard Midtrans Sandbox (mode sandbox untuk testing, atau production untuk transaksi asli). 
 
 ## Akun Demo
 
