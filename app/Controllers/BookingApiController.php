@@ -17,7 +17,7 @@ class BookingApiController extends BaseController
     // Endpoint: GET /api/bookings
     public function getAllBookings()
     {
-        // 🔒 Simulasi Auth API Key sederhana sesuai permintaan rubrik hijau
+        //  Simulasi Auth API Key sederhana sesuai permintaan rubrik hijau
         $apiKey = $this->request->getHeaderLine('X-API-KEY');
         if ($apiKey !== 'MUA_SECRET_KEY_2026') {
             return $this->response->setJSON([

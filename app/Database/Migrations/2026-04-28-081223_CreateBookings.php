@@ -9,101 +9,74 @@ class CreateBookings extends Migration
     public function up()
     {
         $this->forge->addField([
-            'id'=>[
-                'type'=>'INT',
-                'constraint'=>11,
-                'unsigned'=>true,
-                'auto_increment'=>true
+            'id' => [
+                'type'           => 'INT',
+                'unsigned'       => true,
+                'auto_increment' => true,
             ],
-
-            'user_id'=>[
-                'type'=>'INT',
-                'constraint'=>11,
-                'unsigned'=>true
+            'user_id' => [
+                'type'     => 'INT',
+                'unsigned' => true,
             ],
-
-            'service_id'=>[
-                'type'=>'INT',
-                'constraint'=>11,
-                'unsigned'=>true
+            'service_id' => [
+                'type'     => 'INT',
+                'unsigned' => true,
             ],
-
-            'schedule_id'=>[
-                'type'=>'INT',
-                'constraint'=>11,
-                'unsigned'=>true
+            'schedule_id' => [
+                'type'     => 'INT',
+                'unsigned' => true,
             ],
-
-            // --- TAMBAHKAN 3 KOLOM BARU DI SINI ---
-            'service_type'=>[
-                'type'=>'ENUM',
-                'constraint'=>['gallery', 'home_service'],
-                'default'=>'gallery'
+            'service_type' => [
+                'type'       => 'ENUM',
+                'constraint' => ['gallery', 'home_service'],
+                'default'    => 'gallery',
             ],
-
-            // 🟢 BARU: Kolom Alamat yang sebelumnya terlewat dimasukkan
-            'customer_address'=>[
-                'type'=>'TEXT',
-                'null'=>true
+            'customer_address' => [
+                'type' => 'TEXT',
+                'null' => true,
             ],
-
-            'latitude'=>[
-                'type'=>'VARCHAR',
-                'constraint'=>50,
-                'null'=>true
+            'latitude' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 50,
+                'null'       => true,
             ],
-
-            'longitude'=>[
-                'type'=>'VARCHAR',
-                'constraint'=>50,
-                'null'=>true
+            'longitude' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 50,
+                'null'       => true,
             ],
-            // --------------------------------------
-
-            'notes'=>[
-                'type'=>'TEXT',
-                'null'=>true
+            'notes' => [
+                'type' => 'TEXT',
+                'null' => true,
             ],
-
-            'total_price'=>[
-                'type'=>'INT',
-                'constraint'=>11
+            'total_price' => [
+                'type'     => 'INT',
+                'constraint' => 11,
             ],
-
-            'booking_status'=>[
-                'type'=>'ENUM',
-                'constraint'=>[
-                    'pending',
-                    'confirmed',
-                    'rejected',
-                    'process',
-                    'done',
-                    'cancelled'
-                ],
-                'default'=>'pending'
+            'booking_status' => [
+                'type'       => 'ENUM',
+                'constraint' => ['pending', 'confirmed', 'rejected', 'process', 'done', 'cancelled'],
+                'default'    => 'pending',
             ],
-
-            'payment_status'=>[
-                'type'=>'ENUM',
-                'constraint'=>[
-                    'unpaid',
-                    'paid',
-                    'failed',
-                    'expired'
-                ],
-                'default'=>'unpaid'
+            'payment_status' => [
+                'type'       => 'ENUM',
+                'constraint' => ['unpaid', 'paid', 'failed', 'expired'],
+                'default'    => 'unpaid',
             ],
-
-            'created_at DATETIME DEFAULT CURRENT_TIMESTAMP',
-            'updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'
+            'created_at' => [
+                'type' => 'DATETIME',
+                'null' => true,
+            ],
+            'updated_at' => [
+                'type' => 'DATETIME',
+                'null' => true,
+            ],
         ]);
 
         $this->forge->addKey('id', true);
-
         $this->forge->addForeignKey('user_id', 'users', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('service_id', 'services', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('schedule_id', 'schedules', 'id', 'CASCADE', 'CASCADE');
-
         $this->forge->createTable('bookings');
     }
 

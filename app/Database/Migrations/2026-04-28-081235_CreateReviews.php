@@ -9,43 +9,36 @@ class CreateReviews extends Migration
     public function up()
     {
         $this->forge->addField([
-            'id'=>[
-                'type'=>'INT',
-                'constraint'=>11,
-                'unsigned'=>true,
-                'auto_increment'=>true
+            'id' => [
+                'type'           => 'INT',
+                'unsigned'       => true,
+                'auto_increment' => true,
             ],
-
-            'booking_id'=>[
-                'type'=>'INT',
-                'constraint'=>11,
-                'unsigned'=>true
+            'booking_id' => [
+                'type'     => 'INT',
+                'unsigned' => true,
             ],
-
-            'user_id'=>[
-                'type'=>'INT',
-                'constraint'=>11,
-                'unsigned'=>true
+            'user_id' => [
+                'type'     => 'INT',
+                'unsigned' => true,
             ],
-
-            'rating'=>[
-                'type'=>'INT',
-                'constraint'=>1
+            'rating' => [
+                'type'     => 'INT',
+                'constraint' => 11,
             ],
-
-            'review'=>[
-                'type'=>'TEXT',
-                'null'=>true
+            'review' => [
+                'type' => 'TEXT',
+                'null' => true,
             ],
-
-            'created_at DATETIME DEFAULT CURRENT_TIMESTAMP'
+            'created_at' => [
+                'type' => 'DATETIME',
+                'null' => true,
+            ],
         ]);
 
         $this->forge->addKey('id', true);
-
         $this->forge->addForeignKey('booking_id', 'bookings', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('user_id', 'users', 'id', 'CASCADE', 'CASCADE');
-
         $this->forge->createTable('reviews');
     }
 
